@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "besser-view-ops-1.0",
+  "title": "View ops 1.0 (contract 1.8)",
+  "description": "The body of POST /view/ops: a batch of typed ops one agent applies to the view spec (besser-view-spec-1.0). The batch is atomic (all ops or none) and idempotent per agent.run_id and op index.",
+  "type": "object",
+  "required": ["agent", "ops"],
+  "additionalProperties": false,
+  "properties": {
+    "agent": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"$ref": "besser-view-spec-1.0#/$defs/agent_name"},
+        "run_id": {"$ref": "besser-view-spec-1.0#/$defs/run_id", "description": "One id per batch: sending the same run_id again is a retry and changes nothing."}
+      }
+    },
+    "base_version": {"type": "integer", "minimum": 0, "description": "The spec version the agent looked at. If the spec has moved on, the batch is refused with 409 and the current spec."},
+    "message": {"type": "string", "maxLength": 4000, "description": "A short account of what the batch does, for the history."},
+    "ops": {"type": "array", "minItems": 1, "maxItems": 50, "items": {"$ref": "#/$defs/op"}}
+  },
+  "$defs": {
+    "op": {
+      "type": "object",
+      "required": ["op"],
+      "properties": {
+        "op": {"enum": ["upsert_panel", "remove_panel", "set_layout", "add_mark", "update_mark", "keep_mark", "remove_mark", "pin_panel", "clear", "set_title", "set_context", "set_panel_context"]}
+      },
+      "allOf": [
+        {"if": {"properties": {"op": {"const": "upsert_panel"}}, "required": ["op"]}, "then": {"$ref": "#/$defs/upsert_panel"}},
+        {"if": {"properties": {"op": {"const": "remove_panel"}}, "required": ["op"]}, "then": {"$ref": "#/$defs/remove_panel"}},
+        {"if": {"properties": {"op": {"const": "set_layout"}}, "required": ["op"]}, "then": {"$ref": "#/$defs/set_layout"}},
+        {"if": {"properties": {"op": {"const": "add_mark"}}, "required": ["op"]}, "then": {"$ref": "#/$defs/add_mark"}},
+        {"if": {"properties": {"op": {"const": "update_mark"}}, "required": ["op"]}, "then": {"$ref": "#/$defs/update_mark"}},
+        {"if": {"properties": {"op": {"const": "keep_mark"}}, "required": ["op"]}, "then": {"$ref": "#/$defs/mark_ref_op"}},
+        {"if": {"properties": {"op": {"const": "remove_mark"}}, "required": ["op"]}, "then": {"$ref": "#/$defs/mark_ref_op"}},
+        {"if": {"properties": {"op": {"const": "pin_panel"}}, "required": ["op"]}, "then": {"$ref": "#/$defs/pin_panel"}},
+        {"if": {"properties": {"op": {"const": "clear"}}, "required": ["op"]}, "then": {"$ref": "#/$defs/clear"}},
+        {"if": {"properties": {"op": {"const": "set_title"}}, "required": ["op"]}, "then": {"$ref": "#/$defs/set_title"}},
+        {"if": {"properties": {"op": {"const": "set_context"}}, "required": ["op"]}, "then": {"$ref": "#/$defs/set_context"}},
+        {"if": {"properties": {"op": {"const": "set_panel_context"}}, "required": ["op"]}, "then": {"$ref": "#/$defs/set_panel_context"}}
+      ]
+    },
+    "tmp_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,39}$",
+      "not": {"pattern": "^m[1-9][0-9]*$"},
+      "description": "A name for a mark added in this batch, so later ops in the same batch can refer to it; the response maps it to the assigned {id, n}."
+    },
+    "mark_ref": {
+      "description": "An existing mark id (m12) or the tmp_id of a mark added earlier in the same batch.",
+      "anyOf": [{"$ref": "besser-view-spec-1.0#/$defs/mark_id"}, {"$ref": "#/$defs/tmp_id"}]
+    },
+    "upsert_panel": {
+      "type": "object",
+      "required": ["op", "panel"],
+      "additionalProperties": false,
+      "description": "Add a panel, or replace the panel with the same id. A new panel goes in a new layout row after the row that holds 'after' (default: at the end).",
+      "properties": {
+        "op": {"const": "upsert_panel"},
+        "panel": {"$ref": "besser-view-spec-1.0#/$defs/panel"},
+        "after": {"$ref": "besser-view-spec-1.0#/$defs/panel_id"}
+      }
+    },
+    "remove_panel": {
+      "type": "object",
+      "required": ["op", "id"],
+      "additionalProperties": false,
+      "description": "Remove a panel and take it out of the layout. Refused for a pinned panel, and for a panel with marks unless force (which removes them too).",
+      "properties": {
+        "op": {"const": "remove_panel"},
+        "id": {"$ref": "besser-view-spec-1.0#/$defs/panel_id"},
+        "force": {"type": "boolean"}
+      }
+    },
+    "set_layout": {
+      "type": "object",
+      "required": ["op", "rows"],
+      "additionalProperties": false,
+      "description": "Replace the layout. Every panel must appear exactly once.",
+      "properties": {
+        "op": {"const": "set_layout"},
+        "rows": {"$ref": "besser-view-spec-1.0#/$defs/layout/properties/rows"}
+      }
+    },
+    "mark_input": {
+      "allOf": [
+        {"$ref": "besser-view-spec-1.0#/$defs/mark_body"},
+        {"required": ["kind", "target", "note", "params"],
+         "properties": {"id": {"not": {}}, "n": {"not": {}}, "story_n": {"not": {}}, "status": {"not": {}}}}
+      ]
+    },
+    "add_mark": {
+      "type": "object",
+      "required": ["op", "mark"],
+      "additionalProperties": false,
+      "description": "Draw a mark. The backend assigns id, n, story_n (1.6: its storyline's page number) and status 'proposed', and fills agent and provenance.",
+      "properties": {
+        "op": {"const": "add_mark"},
+        "mark": {"$ref": "#/$defs/mark_input"},
+        "tmp_id": {"$ref": "#/$defs/tmp_id"}
+      }
+    },
+    "update_mark": {
+      "type": "object",
+      "required": ["op", "id", "set"],
+      "additionalProperties": false,
+      "description": "Change some fields of a mark (its kind and target stay). The result is validated as a whole.",
+      "properties": {
+        "op": {"const": "update_mark"},
+        "id": {"$ref": "#/$defs/mark_ref"},
+        "set": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": false,
+          "properties": {
+            "note": {"$ref": "besser-view-spec-1.0#/$defs/template"},
+            "facts": {"$ref": "besser-view-spec-1.0#/$defs/facts"},
+            "params": {"type": "object"},
+            "series": {"$ref": "besser-view-spec-1.0#/$defs/key"},
+            "thread": {"$ref": "besser-view-spec-1.0#/$defs/key"},
+            "query": {"$ref": "besser-view-spec-1.0#/$defs/query"},
+            "period": {"$ref": "besser-view-spec-1.0#/$defs/period"}
+          }
+        }
+      }
+    },
+    "mark_ref_op": {
+      "type": "object",
+      "required": ["op", "id"],
+      "additionalProperties": false,
+      "description": "keep_mark sets status 'kept'; remove_mark deletes the mark (its number is not reused).",
+      "properties": {
+        "op": {"enum": ["keep_mark", "remove_mark"]},
+        "id": {"$ref": "#/$defs/mark_ref"}
+      }
+    },
+    "pin_panel": {
+      "type": "object",
+      "required": ["op", "id", "pinned"],
+      "additionalProperties": false,
+      "properties": {
+        "op": {"const": "pin_panel"},
+        "id": {"$ref": "besser-view-spec-1.0#/$defs/panel_id"},
+        "pinned": {"type": "boolean"}
+      }
+    },
+    "clear": {
+      "type": "object",
+      "required": ["op", "scope"],
+      "additionalProperties": false,
+      "description": "marks: remove proposed marks. agent_panels: remove panels made by agents (not 'baseline') with their marks. all: both. page (the user only): remove every panel, the page's own included, with its marks, leaving an empty page; POST /view/reset brings the baseline back. Kept marks and pinned panels always stay (a panel carrying a kept mark stays with it). 'agent' limits it to one agent's work.",
+      "properties": {
+        "op": {"const": "clear"},
+        "scope": {"enum": ["marks", "agent_panels", "all", "page"]},
+        "agent": {"$ref": "besser-view-spec-1.0#/$defs/agent_name"}
+      }
+    },
+    "set_title": {
+      "type": "object",
+      "required": ["op", "title"],
+      "additionalProperties": false,
+      "properties": {
+        "op": {"const": "set_title"},
+        "title": {"$ref": "besser-view-spec-1.0#/$defs/title"}
+      }
+    },
+    "set_context": {
+      "type": "object",
+      "required": ["op"],
+      "additionalProperties": false,
+      "description": "Move the page to another year (or month) or another product, or (1.4) draw it for another reader (persona): merges into spec.context. Sent by the user's Year, Goods and Reading as controls (agent 'user') or by an agent ('show me 2020'). Panels whose queries use $period, $previous or $product follow; panels with a literal period stay on it. Marks keep their own period, and the page dims those that no longer match.",
+      "properties": {
+        "op": {"const": "set_context"},
+        "period": {"$ref": "besser-view-spec-1.0#/$defs/period"},
+        "product": {"$ref": "besser-view-spec-1.0#/$defs/code"},
+        "flow": {"$ref": "besser-view-spec-1.0#/$defs/context/properties/flow"},
+        "start": {"$ref": "besser-view-spec-1.0#/$defs/context/properties/start"},
+        "persona": {"$ref": "besser-view-spec-1.0#/$defs/context/properties/persona"}
+      },
+      "anyOf": [{"required": ["period"]}, {"required": ["product"]}, {"required": ["flow"]}, {"required": ["start"]}, {"required": ["persona"]}]
+    },
+    "set_panel_context": {
+      "type": "object",
+      "required": ["op", "id"],
+      "additionalProperties": false,
+      "description": "Contract 1.5: give one panel its own year (period), range (start and period) or goods (product), which win over the page context for that panel only (its queries, facts and marks). The fields given are the panel's whole own context: a field left out or null follows the page again, and an op with only the id makes the whole panel follow the page. Sent by a chart's own Year, From/To and Goods menu (agent 'user') or by an agent. Only the placeholders the panel's queries use can be set: period for $period/$previous, start for $start, product for $product. start needs period and is no later than it.",
+      "properties": {
+        "op": {"const": "set_panel_context"},
+        "id": {"$ref": "besser-view-spec-1.0#/$defs/panel_id"},
+        "period": {"anyOf": [{"$ref": "besser-view-spec-1.0#/$defs/period"}, {"type": "null"}]},
+        "start": {"anyOf": [{"$ref": "besser-view-spec-1.0#/$defs/panel_context/properties/start"}, {"type": "null"}]},
+        "product": {"anyOf": [{"$ref": "besser-view-spec-1.0#/$defs/code"}, {"type": "null"}]}
+      }
+    }
+  }
+}

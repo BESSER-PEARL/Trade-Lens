@@ -1,0 +1,424 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "besser-persona-profile-1.0",
+  "title": "Persona profile of the Luxembourg Trade Explorer",
+  "description": "How the page and the agents adapt to one kind of reader. A profile never carries data or figures: it chooses panels, wording, depth and questions. Every figure still comes from /insights through {fact} placeholders, so two personas asking the same question see the same numbers. The 'presentation' block reuses BESSER's agent-personalisation vocabulary (agentStyle, languageComplexity, sentenceLength, useAbbreviations, interfaceStyle) so a profile can be produced from, or fed to, BESSER's personalisation pipeline.",
+  "type": "object",
+  "required": [
+    "id",
+    "label",
+    "archetype",
+    "literacy",
+    "default_view",
+    "agents",
+    "answer",
+    "charts",
+    "vocabulary",
+    "suggested_questions",
+    "presentation",
+    "prompt_snippet"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z_]{1,31}$",
+      "description": "Value of spec.context.persona."
+    },
+    "label": {
+      "type": "string",
+      "maxLength": 40,
+      "description": "Shown in the persona switcher."
+    },
+    "tagline": {
+      "type": "string",
+      "maxLength": 80,
+      "description": "One line under the label: what this view is for."
+    },
+    "archetype": {
+      "enum": [
+        "expert_analyst",
+        "information_forager",
+        "inquiring_citizen",
+        "policymaker",
+        "technical_user"
+      ],
+      "description": "The ONS persona this profile specialises (ONS digital, 2014/2016)."
+    },
+    "literacy": {
+      "enum": [
+        "expert",
+        "intermediate",
+        "general"
+      ],
+      "description": "Statistical literacy assumed: drives depth, codes and method."
+    },
+    "devices": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "desktop",
+          "laptop",
+          "tablet",
+          "phone",
+          "projector"
+        ]
+      }
+    },
+    "jury_link": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Which STATEC roles this persona speaks to (documentation only; the app does not read it)."
+    },
+    "default_view": {
+      "type": "object",
+      "required": [
+        "context",
+        "show_panels"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "type": "object",
+          "required": [
+            "period",
+            "product"
+          ],
+          "additionalProperties": false,
+          "description": "Sent as one set_context op when the persona is chosen (with persona=<id>).",
+          "properties": {
+            "period": {
+              "type": "string",
+              "pattern": "^[0-9]{4}(-(0[1-9]|1[0-2]))?$"
+            },
+            "product": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]{1,16}$"
+            },
+            "flow": {
+              "enum": [
+                "IMPORT",
+                "EXPORT",
+                "BOTH"
+              ]
+            }
+          }
+        },
+        "show_panels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Baseline panel ids shown, in the baseline's own order (headline, kpi_imports, kpi_balance, kpi_exports, crossroads, trend, mix_export, specialisation, peers)."
+        },
+        "hide_panels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Baseline panels the page folds under 'More for this view' (never deleted from the spec: agents can still target them)."
+        },
+        "variant_ops": {
+          "type": "string",
+          "description": "Key of an ops batch in contract/personas/persona_variants.json, sent as agent 'user' after set_context: the persona's extra panels."
+        },
+        "panel_titles": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "description": "Display-only retitling of baseline panels (e.g. specialisation -> 'Goods Luxembourg sells more of than its EU peers')."
+        }
+      }
+    },
+    "agents": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "max_per_question"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "trend_finder",
+              "cause_finder",
+              "forecaster",
+              "visualizer",
+              "general"
+            ]
+          }
+        },
+        "lead": {
+          "enum": [
+            "trend_finder",
+            "cause_finder",
+            "forecaster",
+            "visualizer"
+          ],
+          "description": "Preferred first specialist when the router hesitates."
+        },
+        "max_per_question": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3,
+          "description": "Router cap: a journalist gets one voice, an analyst up to three."
+        },
+        "show_agent_cards": {
+          "type": "boolean",
+          "description": "Show the four pens and their cards, or one 'Ask the data' voice."
+        }
+      }
+    },
+    "answer": {
+      "type": "object",
+      "required": [
+        "depth",
+        "max_sentences"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "depth": {
+          "enum": [
+            "headline",
+            "brief",
+            "full"
+          ]
+        },
+        "max_sentences": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "lead_with": {
+          "enum": [
+            "figure",
+            "so_what",
+            "method",
+            "chart"
+          ]
+        },
+        "show_codes": {
+          "type": "boolean",
+          "description": "Write HS/CN8 codes (85171300) next to names."
+        },
+        "show_sources": {
+          "enum": [
+            "inline",
+            "on_request",
+            "footer"
+          ],
+          "description": "API calls / dataset citation in the reply."
+        },
+        "show_method": {
+          "type": "boolean",
+          "description": "Name the method (STL, change points, ensemble, backtest MASE)."
+        },
+        "uncertainty": {
+          "enum": [
+            "plain_range",
+            "interval",
+            "backtest"
+          ],
+          "description": "How a forecast is told: 'between X and Y, not a promise' / the 80% interval / interval + backtest skill against a seasonal naive."
+        },
+        "quotable_sentence": {
+          "type": "boolean",
+          "description": "End with one sentence that can be quoted as is, with 'Source: Eurostat ds-045409 (data produced by STATEC)'."
+        },
+        "caveats": {
+          "enum": [
+            "one_line",
+            "full"
+          ],
+          "description": "Provisional 2026 months, 'lined up is not caused', BLEU before 1999."
+        }
+      }
+    },
+    "charts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "prefer": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/panel_type"
+          }
+        },
+        "avoid": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/panel_type"
+          }
+        },
+        "max_new_panels": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "description": "Per answer."
+        },
+        "charts_first": {
+          "type": "boolean",
+          "description": "Draw before talking: the reply refers to the chart."
+        }
+      }
+    },
+    "vocabulary": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 160
+      },
+      "description": "Term the agents and the page must replace, and with what. Applied in prompts and in panel titles; never inside {fact} placeholders."
+    },
+    "suggested_questions": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 6,
+      "items": {
+        "type": "string",
+        "maxLength": 120
+      },
+      "description": "Chips in 'Ask the data'; each answerable with ds-045409 as loaded."
+    },
+    "hide": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "mark_numbers",
+          "agent_cards",
+          "api_urls",
+          "codes",
+          "provenance_panel",
+          "method_notes",
+          "proposed_marks_counter",
+          "ops_inspector"
+        ]
+      },
+      "description": "UI elements hidden for this persona (all reachable through 'Show more')."
+    },
+    "show": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "api_urls",
+          "provenance_panel",
+          "method_notes",
+          "ops_inspector",
+          "version_history",
+          "copy_chart",
+          "citation_line",
+          "download_csv"
+        ]
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "BESSER agent-personalisation vocabulary (besser/utilities/web_modeling_editor/backend/services/utils/agent_config_recommendation_utils.py, RECOMMENDATION_ALLOWED_VALUES).",
+      "properties": {
+        "agentLanguage": {
+          "enum": [
+            "original",
+            "english",
+            "french",
+            "german",
+            "luxembourgish"
+          ]
+        },
+        "agentStyle": {
+          "enum": [
+            "original",
+            "formal",
+            "informal",
+            "friendly",
+            "technical"
+          ]
+        },
+        "languageComplexity": {
+          "enum": [
+            "original",
+            "simple",
+            "medium",
+            "complex"
+          ]
+        },
+        "sentenceLength": {
+          "enum": [
+            "original",
+            "concise",
+            "verbose"
+          ]
+        },
+        "useAbbreviations": {
+          "type": "boolean"
+        },
+        "interfaceStyle": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "size": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 32
+            },
+            "contrast": {
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            "lineSpacing": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 3
+            }
+          }
+        }
+      }
+    },
+    "prompt_snippet": {
+      "type": "string",
+      "maxLength": 1200,
+      "description": "Appended to every specialist's system prompt as '## Who is asking'. It changes depth and words, never the rules on figures."
+    },
+    "leaves_when": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Documentation only: what would make this reader leave (design guard rails)."
+    },
+    "derived_from": {
+      "type": "object",
+      "description": "Filled by the BESSER adapter: the user model and BESSER rules it came from."
+    }
+  },
+  "$defs": {
+    "panel_type": {
+      "enum": [
+        "kpi",
+        "bar",
+        "line",
+        "table",
+        "flow",
+        "text",
+        "waterfall",
+        "choropleth",
+        "flowmap",
+        "heatmap",
+        "treemap",
+        "butterfly",
+        "bump",
+        "scatter",
+        "compare"
+      ]
+    }
+  }
+}

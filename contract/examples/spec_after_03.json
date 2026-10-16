@@ -1,0 +1,979 @@
+{
+  "spec_version": "1.0",
+  "version": 3,
+  "title": "Luxembourg's trade in goods: where the 2025 export rise came from",
+  "updated_by": "forecaster",
+  "next_mark_n": 8,
+  "next_story_n": 4,
+  "panels": [
+    {
+      "id": "headline",
+      "type": "text",
+      "title": "In short",
+      "text": "Exports rose by {rise} in 2025. Smartphones (CN8 85171300) went from {phones_before} to {phones_now}, and {to_france} of them went to France.",
+      "queries": [
+        {
+          "key": "exports",
+          "endpoint": "/insights/series",
+          "params": {
+            "flow": "EXPORT",
+            "freq": "A",
+            "start": "2024",
+            "end": "2025"
+          },
+          "tone": "exports"
+        },
+        {
+          "key": "phones",
+          "endpoint": "/insights/series",
+          "params": {
+            "flow": "EXPORT",
+            "freq": "A",
+            "product": "85171300",
+            "start": "2024",
+            "end": "2025"
+          },
+          "tone": "exports"
+        },
+        {
+          "key": "phones_partners",
+          "endpoint": "/insights/ranking",
+          "params": {
+            "by": "partner",
+            "period": "2025",
+            "flow": "EXPORT",
+            "product": "85171300"
+          },
+          "tone": "exports"
+        }
+      ],
+      "facts": {
+        "exports_before": {
+          "query": "exports",
+          "path": "0.value",
+          "format": "eur"
+        },
+        "exports_now": {
+          "query": "exports",
+          "path": "-1.value",
+          "format": "eur"
+        },
+        "rise": {
+          "op": "diff",
+          "of": [
+            "exports_now",
+            "exports_before"
+          ],
+          "format": "eur"
+        },
+        "phones_before": {
+          "query": "phones",
+          "path": "0.value",
+          "format": "eur"
+        },
+        "phones_now": {
+          "query": "phones",
+          "path": "-1.value",
+          "format": "eur"
+        },
+        "to_france": {
+          "query": "phones_partners",
+          "path": "items.[code=FR].share",
+          "format": "pct"
+        }
+      },
+      "provenance": {
+        "agent": "trend_finder",
+        "run_id": "trend_finder-20261016-0001",
+        "created_at": "2026-10-16T09:12:04Z",
+        "sources": [
+          {
+            "url": "/insights/movers?by=product&period=2025&previous=2024&flow=EXPORT&level=4",
+            "label": "Largest CN8 export movers, 2024 to 2025"
+          },
+          {
+            "url": "/insights/series?flow=EXPORT&freq=A&start=2024&end=2025"
+          },
+          {
+            "url": "/insights/series?flow=EXPORT&freq=A&product=85171300&start=2024&end=2025"
+          },
+          {
+            "url": "/insights/ranking?by=partner&period=2025&flow=EXPORT&product=85171300"
+          }
+        ]
+      },
+      "agent": "trend_finder",
+      "pinned": false
+    },
+    {
+      "id": "kpi_imports",
+      "type": "kpi",
+      "title": "Bought",
+      "value": "total",
+      "text": "bought from {partners} partners",
+      "queries": [
+        {
+          "key": "imports",
+          "endpoint": "/insights/ladder",
+          "params": {
+            "by": "partner",
+            "period": "$period",
+            "flow": "IMPORT",
+            "product": "$product"
+          },
+          "tone": "imports"
+        }
+      ],
+      "facts": {
+        "total": {
+          "query": "imports",
+          "path": "total",
+          "format": "eur"
+        },
+        "partners": {
+          "query": "imports",
+          "path": "n_items",
+          "format": "int"
+        }
+      },
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "kpi_balance",
+      "type": "kpi",
+      "title": "Balance",
+      "value": "balance",
+      "text": "balance",
+      "queries": [
+        {
+          "key": "imports",
+          "endpoint": "/insights/ladder",
+          "params": {
+            "by": "partner",
+            "period": "$period",
+            "flow": "IMPORT",
+            "product": "$product"
+          },
+          "tone": "imports"
+        },
+        {
+          "key": "exports",
+          "endpoint": "/insights/ladder",
+          "params": {
+            "by": "partner",
+            "period": "$period",
+            "flow": "EXPORT",
+            "product": "$product"
+          },
+          "tone": "exports"
+        }
+      ],
+      "facts": {
+        "imports": {
+          "query": "imports",
+          "path": "total",
+          "format": "eur"
+        },
+        "exports": {
+          "query": "exports",
+          "path": "total",
+          "format": "eur"
+        },
+        "balance": {
+          "op": "diff",
+          "of": [
+            "exports",
+            "imports"
+          ],
+          "format": "eur_signed"
+        }
+      },
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "kpi_exports",
+      "type": "kpi",
+      "title": "Sold",
+      "value": "total",
+      "text": "sold to {partners} partners",
+      "queries": [
+        {
+          "key": "exports",
+          "endpoint": "/insights/ladder",
+          "params": {
+            "by": "partner",
+            "period": "$period",
+            "flow": "EXPORT",
+            "product": "$product"
+          },
+          "tone": "exports"
+        }
+      ],
+      "facts": {
+        "total": {
+          "query": "exports",
+          "path": "total",
+          "format": "eur"
+        },
+        "partners": {
+          "query": "exports",
+          "path": "n_items",
+          "format": "int"
+        }
+      },
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "crossroads",
+      "type": "flow",
+      "title": "Where the goods come from and where they go",
+      "subtitle": "Where imports come from and where exports go",
+      "text": "{gap} more bought than sold",
+      "queries": [
+        {
+          "key": "in",
+          "label": "Bought from",
+          "endpoint": "/insights/ranking",
+          "params": {
+            "by": "partner",
+            "period": "$period",
+            "flow": "IMPORT",
+            "max_items": 8,
+            "product": "$product"
+          },
+          "tone": "imports"
+        },
+        {
+          "key": "out",
+          "label": "Sold to",
+          "endpoint": "/insights/ranking",
+          "params": {
+            "by": "partner",
+            "period": "$period",
+            "flow": "EXPORT",
+            "max_items": 8,
+            "product": "$product"
+          },
+          "tone": "exports"
+        }
+      ],
+      "facts": {
+        "bought": {
+          "query": "in",
+          "path": "total",
+          "format": "eur"
+        },
+        "sold": {
+          "query": "out",
+          "path": "total",
+          "format": "eur"
+        },
+        "gap": {
+          "op": "diff",
+          "of": [
+            "bought",
+            "sold"
+          ],
+          "format": "eur"
+        }
+      },
+      "options": {
+        "center_label": "Luxembourg",
+        "show_gap": true
+      },
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "trend",
+      "type": "line",
+      "title": "Imports have been larger than exports every year since 1999",
+      "subtitle": "Yearly, nominal euros",
+      "queries": [
+        {
+          "key": "imports",
+          "label": "Imports",
+          "endpoint": "/insights/series",
+          "params": {
+            "flow": "IMPORT",
+            "freq": "A",
+            "start": "1999",
+            "product": "$product"
+          },
+          "tone": "imports"
+        },
+        {
+          "key": "exports",
+          "label": "Exports",
+          "endpoint": "/insights/series",
+          "params": {
+            "flow": "EXPORT",
+            "freq": "A",
+            "start": "1999",
+            "product": "$product"
+          },
+          "tone": "exports"
+        }
+      ],
+      "options": {
+        "x": "period",
+        "y": "value",
+        "format": "eur",
+        "gap_fill": true
+      },
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "mix_export",
+      "type": "bar",
+      "title": "What Luxembourg sells",
+      "text": "{chapters} chapters of {floor} or more cover {coverage} of exports in {year}.",
+      "queries": [
+        {
+          "key": "main",
+          "endpoint": "/insights/ranking/records",
+          "params": {
+            "by": "product",
+            "period": "$period",
+            "flow": "EXPORT",
+            "max_items": 5
+          },
+          "tone": "exports"
+        },
+        {
+          "key": "ladder",
+          "endpoint": "/insights/ladder",
+          "params": {
+            "by": "product",
+            "period": "$period",
+            "flow": "EXPORT"
+          }
+        }
+      ],
+      "facts": {
+        "chapters": {
+          "query": "ladder",
+          "path": "ladder.1.items",
+          "format": "int"
+        },
+        "floor": {
+          "query": "ladder",
+          "path": "ladder.1.threshold",
+          "format": "pct"
+        },
+        "coverage": {
+          "query": "ladder",
+          "path": "ladder.1.coverage",
+          "format": "pct"
+        },
+        "year": {
+          "query": "ladder",
+          "path": "period",
+          "format": "period"
+        }
+      },
+      "options": {
+        "x": "name",
+        "y": "share",
+        "format": "percent",
+        "orientation": "horizontal",
+        "limit": 5,
+        "exclude_codes": [
+          "OTHER"
+        ]
+      },
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "specialisation",
+      "type": "bar",
+      "title": "Where it stands out",
+      "text": "Revealed comparative advantage against {peers} EU peers. The grey tick is 1, the peers' own weight.",
+      "queries": [
+        {
+          "key": "main",
+          "endpoint": "/insights/specialisation/records",
+          "params": {
+            "by": "product",
+            "period": "$period",
+            "flow": "EXPORT",
+            "limit": 3
+          },
+          "tone": "exports"
+        },
+        {
+          "key": "detail",
+          "endpoint": "/insights/specialisation",
+          "params": {
+            "by": "product",
+            "period": "$period",
+            "flow": "EXPORT"
+          }
+        }
+      ],
+      "facts": {
+        "peers": {
+          "query": "detail",
+          "path": "peers.#length",
+          "format": "int"
+        }
+      },
+      "options": {
+        "x": "name",
+        "y": "rca",
+        "format": "number",
+        "orientation": "horizontal",
+        "reference": 1
+      },
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "peers",
+      "type": "bar",
+      "title": "Among the 27 EU countries",
+      "text": "{rank} of {count} for export growth from 2015 to {year}, {growth} in nominal euros.",
+      "queries": [
+        {
+          "key": "main",
+          "endpoint": "/insights/compare/records",
+          "params": {
+            "by": "reporter",
+            "period": "$period",
+            "flow": "EXPORT",
+            "base": "2015",
+            "limit": 27,
+            "product": "$product"
+          },
+          "tone": "exports"
+        }
+      ],
+      "facts": {
+        "rank": {
+          "query": "main",
+          "path": "[is_focus=true].#position",
+          "format": "ordinal"
+        },
+        "count": {
+          "query": "main",
+          "path": "#length",
+          "format": "int"
+        },
+        "growth": {
+          "query": "main",
+          "path": "[is_focus=true].growth",
+          "format": "percent_signed"
+        },
+        "year": {
+          "endpoint": "/insights/ladder",
+          "params": {
+            "by": "partner",
+            "period": "$period",
+            "flow": "EXPORT",
+            "product": "$product"
+          },
+          "path": "period",
+          "format": "period"
+        }
+      },
+      "options": {
+        "x": "code",
+        "y": "growth",
+        "format": "percent",
+        "orientation": "vertical",
+        "highlight_focus": true
+      },
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "phones_drill",
+      "type": "bar",
+      "title": "From electrical machinery down to the smartphone line",
+      "subtitle": "Exports 2025: HS 85, then heading 8517, then subheading 851713",
+      "queries": [
+        {
+          "key": "hs4",
+          "label": "Headings of HS 85",
+          "endpoint": "/insights/ranking/records",
+          "params": {
+            "by": "product",
+            "parent": "85",
+            "period": "2025",
+            "flow": "EXPORT",
+            "max_items": 5
+          },
+          "tone": "exports"
+        },
+        {
+          "key": "hs6",
+          "label": "Subheadings of 8517",
+          "endpoint": "/insights/ranking/records",
+          "params": {
+            "by": "product",
+            "parent": "8517",
+            "period": "2025",
+            "flow": "EXPORT",
+            "max_items": 5
+          },
+          "tone": "exports"
+        },
+        {
+          "key": "cn8",
+          "label": "CN8 lines of 851713",
+          "endpoint": "/insights/ranking/records",
+          "params": {
+            "by": "product",
+            "parent": "851713",
+            "period": "2025",
+            "flow": "EXPORT",
+            "max_items": 5
+          },
+          "tone": "exports"
+        }
+      ],
+      "options": {
+        "x": "name",
+        "y": "value",
+        "format": "eur",
+        "orientation": "horizontal",
+        "drill": true,
+        "exclude_codes": [
+          "OTHER"
+        ]
+      },
+      "agent": "trend_finder",
+      "pinned": false
+    },
+    {
+      "id": "outlook",
+      "type": "text",
+      "title": "What comes next",
+      "text": "Exports in 2026 should land between {low} and {high}, against {last} in 2025. The method is {method} on monthly data, and on {tested} it was off by {error}. The smartphone line makes 2026 harder to call than usual.",
+      "queries": [
+        {
+          "key": "forecast",
+          "endpoint": "/insights/forecast",
+          "params": {
+            "flow": "EXPORT",
+            "freq": "M",
+            "horizon": 12,
+            "method": "ets",
+            "interval": 0.8,
+            "aggregate": "A"
+          },
+          "tone": "exports"
+        },
+        {
+          "key": "actual",
+          "endpoint": "/insights/series",
+          "params": {
+            "flow": "EXPORT",
+            "freq": "A",
+            "start": "2025",
+            "end": "2025"
+          },
+          "tone": "exports"
+        }
+      ],
+      "facts": {
+        "low": {
+          "query": "forecast",
+          "path": "rows.-1.low",
+          "format": "eur"
+        },
+        "high": {
+          "query": "forecast",
+          "path": "rows.-1.high",
+          "format": "eur"
+        },
+        "last": {
+          "query": "actual",
+          "path": "0.value",
+          "format": "eur"
+        },
+        "method": {
+          "query": "forecast",
+          "path": "method_label",
+          "format": "text"
+        },
+        "error": {
+          "query": "forecast",
+          "path": "backtest.mape",
+          "format": "pct"
+        },
+        "tested": {
+          "query": "forecast",
+          "path": "backtest.period",
+          "format": "text"
+        }
+      },
+      "provenance": {
+        "agent": "forecaster",
+        "run_id": "forecaster-20261016-0001",
+        "created_at": "2026-10-16T09:17:52Z",
+        "sources": [
+          {
+            "url": "/insights/forecast?flow=EXPORT&freq=M&horizon=12&method=ets&interval=0.8&aggregate=A",
+            "label": "Export forecast"
+          },
+          {
+            "url": "/insights/series?flow=EXPORT&freq=A&start=2025&end=2025"
+          }
+        ]
+      },
+      "agent": "forecaster",
+      "pinned": false
+    }
+  ],
+  "layout": {
+    "rows": [
+      {
+        "panels": [
+          "headline"
+        ]
+      },
+      {
+        "panels": [
+          "kpi_imports",
+          "kpi_balance",
+          "kpi_exports"
+        ]
+      },
+      {
+        "panels": [
+          "crossroads"
+        ]
+      },
+      {
+        "panels": [
+          "phones_drill"
+        ]
+      },
+      {
+        "panels": [
+          "trend"
+        ]
+      },
+      {
+        "panels": [
+          "outlook"
+        ]
+      },
+      {
+        "panels": [
+          "mix_export",
+          "specialisation",
+          "peers"
+        ]
+      }
+    ]
+  },
+  "marks": [
+    {
+      "id": "m1",
+      "n": 1,
+      "story_n": 1,
+      "kind": "thread",
+      "agent": "trend_finder",
+      "target": "crossroads",
+      "thread": "smartphones",
+      "params": {
+        "in_code": "CN",
+        "out_code": "FR",
+        "product": "85171300",
+        "label": "Smartphones, China to France"
+      },
+      "note": "Smartphones (CN8 85171300): {bought_cn} bought from China, {cn_share} of everything bought from China, and {sold_fr} sold to France. That looks like a transit flow; worth checking with STATEC.",
+      "facts": {
+        "bought_cn": {
+          "endpoint": "/insights/ranking",
+          "params": {
+            "by": "partner",
+            "period": "2025",
+            "flow": "IMPORT",
+            "product": "85171300"
+          },
+          "path": "items.[code=CN].value",
+          "format": "eur"
+        },
+        "from_cn": {
+          "endpoint": "/insights/ranking",
+          "params": {
+            "by": "partner",
+            "period": "2025",
+            "flow": "IMPORT",
+            "max_items": 30
+          },
+          "path": "items.[code=CN].value",
+          "format": "eur"
+        },
+        "cn_share": {
+          "op": "ratio",
+          "of": [
+            "bought_cn",
+            "from_cn"
+          ],
+          "format": "pct"
+        },
+        "sold_fr": {
+          "endpoint": "/insights/ranking",
+          "params": {
+            "by": "partner",
+            "period": "2025",
+            "flow": "EXPORT",
+            "product": "85171300"
+          },
+          "path": "items.[code=FR].value",
+          "format": "eur"
+        }
+      },
+      "status": "proposed",
+      "provenance": {
+        "agent": "trend_finder",
+        "run_id": "trend_finder-20261016-0001",
+        "created_at": "2026-10-16T09:12:04Z",
+        "sources": [
+          {
+            "url": "/insights/movers?by=product&period=2025&previous=2024&flow=EXPORT&level=4",
+            "label": "Largest CN8 export movers, 2024 to 2025"
+          },
+          {
+            "url": "/insights/ranking?by=partner&period=2025&flow=IMPORT&product=85171300"
+          },
+          {
+            "url": "/insights/ranking?by=partner&period=2025&flow=IMPORT&max_items=30"
+          },
+          {
+            "url": "/insights/ranking?by=partner&period=2025&flow=EXPORT&product=85171300"
+          }
+        ]
+      }
+    },
+    {
+      "id": "m2",
+      "n": 2,
+      "story_n": 1,
+      "kind": "highlight",
+      "agent": "trend_finder",
+      "target": "phones_drill",
+      "thread": "smartphones",
+      "params": {
+        "codes": [
+          "8517",
+          "851713",
+          "85171300"
+        ],
+        "label": "The smartphone line"
+      },
+      "note": "The path from chapter 85 to the smartphone line, CN8 85171300.",
+      "status": "proposed",
+      "provenance": {
+        "agent": "trend_finder",
+        "run_id": "trend_finder-20261016-0001",
+        "created_at": "2026-10-16T09:12:04Z",
+        "sources": []
+      }
+    },
+    {
+      "id": "m3",
+      "n": 3,
+      "story_n": 2,
+      "kind": "event",
+      "agent": "cause_finder",
+      "target": "trend",
+      "thread": "events",
+      "params": {
+        "at": "2018-06",
+        "label": "US steel tariffs",
+        "event_id": "us-steel-tariffs-2018"
+      },
+      "note": "The US put tariffs on EU steel and aluminium in June 2018; iron and steel is one of Luxembourg's main export chapters.",
+      "query": {
+        "endpoint": "/insights/events",
+        "params": {
+          "start": "2015"
+        }
+      },
+      "status": "proposed",
+      "provenance": {
+        "agent": "cause_finder",
+        "run_id": "cause_finder-20261016-0001",
+        "created_at": "2026-10-16T09:14:31Z",
+        "sources": [
+          {
+            "url": "/insights/events?start=2015",
+            "label": "Curated events (events.csv)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "m4",
+      "n": 4,
+      "story_n": 2,
+      "kind": "event",
+      "agent": "cause_finder",
+      "target": "trend",
+      "thread": "events",
+      "params": {
+        "at": "2020-03",
+        "until": "2020-05",
+        "label": "COVID-19",
+        "event_id": "covid-19-2020"
+      },
+      "note": "Lockdowns across Europe from March 2020; both imports and exports fell that year.",
+      "query": {
+        "endpoint": "/insights/events",
+        "params": {
+          "start": "2015"
+        }
+      },
+      "status": "proposed",
+      "provenance": {
+        "agent": "cause_finder",
+        "run_id": "cause_finder-20261016-0001",
+        "created_at": "2026-10-16T09:14:31Z",
+        "sources": [
+          {
+            "url": "/insights/events?start=2015"
+          }
+        ]
+      }
+    },
+    {
+      "id": "m5",
+      "n": 5,
+      "story_n": 2,
+      "kind": "event",
+      "agent": "cause_finder",
+      "target": "trend",
+      "thread": "events",
+      "params": {
+        "at": "2021-01",
+        "label": "EU-UK trade agreement",
+        "event_id": "eu-uk-tca-2021"
+      },
+      "note": "The EU-UK Trade and Cooperation Agreement applied from January 2021, after the Brexit transition.",
+      "query": {
+        "endpoint": "/insights/events",
+        "params": {
+          "start": "2015"
+        }
+      },
+      "status": "proposed",
+      "provenance": {
+        "agent": "cause_finder",
+        "run_id": "cause_finder-20261016-0001",
+        "created_at": "2026-10-16T09:14:31Z",
+        "sources": [
+          {
+            "url": "/insights/events?start=2015"
+          }
+        ]
+      }
+    },
+    {
+      "id": "m6",
+      "n": 6,
+      "story_n": 2,
+      "kind": "event",
+      "agent": "cause_finder",
+      "target": "trend",
+      "thread": "events",
+      "params": {
+        "at": "2022-02",
+        "label": "Sanctions on Russia",
+        "event_id": "russia-sanctions-2022"
+      },
+      "note": "EU sanctions on Russia from February 2022, with energy prices pushing import values up.",
+      "query": {
+        "endpoint": "/insights/events",
+        "params": {
+          "start": "2015"
+        }
+      },
+      "status": "proposed",
+      "provenance": {
+        "agent": "cause_finder",
+        "run_id": "cause_finder-20261016-0001",
+        "created_at": "2026-10-16T09:14:31Z",
+        "sources": [
+          {
+            "url": "/insights/events?start=2015"
+          }
+        ]
+      }
+    },
+    {
+      "id": "m7",
+      "n": 7,
+      "story_n": 3,
+      "kind": "forecast",
+      "agent": "forecaster",
+      "target": "trend",
+      "series": "exports",
+      "thread": "outlook",
+      "params": {
+        "label": "2026 forecast"
+      },
+      "query": {
+        "endpoint": "/insights/forecast",
+        "params": {
+          "flow": "EXPORT",
+          "freq": "M",
+          "horizon": 12,
+          "method": "ets",
+          "interval": 0.8,
+          "aggregate": "A"
+        }
+      },
+      "note": "Exports in 2026: {value}, with an interval of {low} to {high}. Tested on {tested}, the method was off by {error}.",
+      "facts": {
+        "value": {
+          "query": "self",
+          "path": "rows.-1.value",
+          "format": "eur"
+        },
+        "low": {
+          "query": "self",
+          "path": "rows.-1.low",
+          "format": "eur"
+        },
+        "high": {
+          "query": "self",
+          "path": "rows.-1.high",
+          "format": "eur"
+        },
+        "error": {
+          "query": "self",
+          "path": "backtest.mape",
+          "format": "pct"
+        },
+        "tested": {
+          "query": "self",
+          "path": "backtest.period",
+          "format": "text"
+        }
+      },
+      "status": "proposed",
+      "provenance": {
+        "agent": "forecaster",
+        "run_id": "forecaster-20261016-0001",
+        "created_at": "2026-10-16T09:17:52Z",
+        "sources": [
+          {
+            "url": "/insights/forecast?flow=EXPORT&freq=M&horizon=12&method=ets&interval=0.8&aggregate=A"
+          }
+        ]
+      }
+    }
+  ],
+  "updated_at": "2026-10-16T09:17:52Z",
+  "message": "A 2026 band for exports, from exponential smoothing on monthly data, with how far off the method was on the last complete year."
+}

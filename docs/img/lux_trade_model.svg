@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-478 -334 1105 767" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12">
+<style>.box{fill:#fff;stroke:#2b3a4a;stroke-width:1.2}.enum{fill:#f5f7fa}.head{font-weight:600}.assoc{stroke:#5b6b7b;stroke-width:1.2;fill:none}.role{fill:#44505c;font-size:10.5px}.title{font-size:16px;font-weight:600}.kind{fill:#6b7785;font-size:10.5px}</style>
+<rect x="-477.69552621700467" y="-334.3452377915607" width="1105.3910524340095" height="767.3452377915607" fill="#ffffff"/>
+<text class="title" x="-457.69552621700467" y="-306.3452377915607">LuxTrade: B-UML domain model imported from SDMX</text>
+<line class="assoc" x1="-306.6" y1="-214.7" x2="-71.5" y2="-65.5"/>
+<text class="role" x="-109.8" y="-96.4">observations_as_partner 0..*</text>
+<text class="role" x="-260.3" y="-175.8">partner 1</text>
+<line class="assoc" x1="303.1" y1="-192.3" x2="80.6" y2="-51.1"/>
+<text class="role" x="124.6" y="-80.6">observations 0..*</text>
+<text class="role" x="267.0" y="-154.9">product 1</text>
+<line class="assoc" x1="-324.8" y1="-186.0" x2="-89.7" y2="-36.8"/>
+<text class="role" x="-128.0" y="-67.7">observations_as_reporter 0..*</text>
+<text class="role" x="-278.5" y="-147.1">reporter 1</text>
+<path class="assoc" d="M437.7,-249.7 c 60,-30 60,57.4 0,32.8"/>
+<text class="role" x="483.7" y="-233.3">children 0..* / parent 0..1</text>
+<line x1="48.4" y1="57.0" x2="218.1" y2="257.0" stroke="#9aa5b1" stroke-dasharray="4 3"/>
+<line x1="0.0" y1="57.0" x2="0.0" y2="257.0" stroke="#9aa5b1" stroke-dasharray="4 3"/>
+<line x1="-48.4" y1="57.0" x2="-245.2" y2="289.0" stroke="#9aa5b1" stroke-dasharray="4 3"/>
+<rect class="box" x="-437.7" y="-266.3" width="140.0" height="66.0" rx="3"/>
+<text class="head" x="-367.7" y="-249.3" text-anchor="middle">Country</text>
+<line x1="-437.7" y1="-242.3" x2="-297.7" y2="-242.3" stroke="#2b3a4a"/>
+<text x="-429.7" y="-228.3">code: str {id}</text>
+<text x="-429.7" y="-212.3">label: str</text>
+<rect class="box" x="-80.6" y="-57.0" width="161.2" height="114.0" rx="3"/>
+<text class="head" x="0.0" y="-40.0" text-anchor="middle">Observation</text>
+<line x1="-80.6" y1="-33.0" x2="80.6" y2="-33.0" stroke="#2b3a4a"/>
+<text x="-72.6" y="-19.0">flow: Flow</text>
+<text x="-72.6" y="-3.0">freq: Freq</text>
+<text x="-72.6" y="13.0">indicators: Indicators</text>
+<text x="-72.6" y="29.0">obs_value: float</text>
+<text x="-72.6" y="45.0">time_period: str</text>
+<rect class="box" x="297.7" y="-274.3" width="140.0" height="82.0" rx="3"/>
+<text class="head" x="367.7" y="-257.3" text-anchor="middle">Product</text>
+<line x1="297.7" y1="-250.3" x2="437.7" y2="-250.3" stroke="#2b3a4a"/>
+<text x="305.7" y="-236.3">code: str {id}</text>
+<text x="305.7" y="-220.3">label: str</text>
+<text x="305.7" y="-204.3">level: int</text>
+<rect class="box enum" x="-350.0" y="289.0" width="140.0" height="82.0" rx="3"/>
+<text class="kind" x="-280.0" y="285.0" text-anchor="middle">«enumeration»</text>
+<text class="head" x="-280.0" y="306.0" text-anchor="middle">Flow</text>
+<line x1="-350.0" y1="313.0" x2="-210.0" y2="313.0" stroke="#2b3a4a"/>
+<text x="-342.0" y="327.0">EXPORT</text>
+<text x="-342.0" y="343.0">IMPORT</text>
+<text x="-342.0" y="359.0">RE_EXPORT</text>
+<rect class="box enum" x="-70.0" y="257.0" width="140.0" height="146.0" rx="3"/>
+<text class="kind" x="0.0" y="253.0" text-anchor="middle">«enumeration»</text>
+<text class="head" x="0.0" y="274.0" text-anchor="middle">Freq</text>
+<line x1="-70.0" y1="281.0" x2="70.0" y2="281.0" stroke="#2b3a4a"/>
+<text x="-62.0" y="295.0">A</text>
+<text x="-62.0" y="311.0">B</text>
+<text x="-62.0" y="327.0">D</text>
+<text x="-62.0" y="343.0">H</text>
+<text x="-62.0" y="359.0">M</text>
+<text x="-62.0" y="375.0">N</text>
+<text x="-62.0" y="391.0">... +3</text>
+<rect class="box enum" x="210.0" y="257.0" width="140.0" height="146.0" rx="3"/>
+<text class="kind" x="280.0" y="253.0" text-anchor="middle">«enumeration»</text>
+<text class="head" x="280.0" y="274.0" text-anchor="middle">Indicators</text>
+<line x1="210.0" y1="281.0" x2="350.0" y2="281.0" stroke="#2b3a4a"/>
+<text x="218.0" y="295.0">APQNTBASE</text>
+<text x="218.0" y="311.0">APQNTFLAG</text>
+<text x="218.0" y="327.0">APRODQNT</text>
+<text x="218.0" y="343.0">EXPQNT</text>
+<text x="218.0" y="359.0">EXPVAL</text>
+<text x="218.0" y="375.0">IMPQNT</text>
+<text x="218.0" y="391.0">... +38</text>
+</svg>

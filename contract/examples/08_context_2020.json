@@ -1,0 +1,8 @@
+{
+  "agent": {"name": "user", "run_id": "user-20261016-0008"},
+  "base_version": 4,
+  "message": "Show me 2020.",
+  "ops": [
+    {"op": "set_context", "period": "2020"}
+  ]
+}

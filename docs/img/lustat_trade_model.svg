@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-590 -398 1181 831" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12">
+<style>.box{fill:#fff;stroke:#2b3a4a;stroke-width:1.2}.enum{fill:#f5f7fa}.head{font-weight:600}.assoc{stroke:#5b6b7b;stroke-width:1.2;fill:none}.role{fill:#44505c;font-size:10.5px}.title{font-size:16px;font-weight:600}.kind{fill:#6b7785;font-size:10.5px}</style>
+<rect x="-590.4173569058692" y="-397.8802457287246" width="1180.8347138117383" height="830.8802457287246" fill="#ffffff"/>
+<text class="title" x="-570.4173569058692" y="-369.8802457287246">LustatTrade: B-UML domain model imported from SDMX</text>
+<line class="assoc" x1="-58.1" y1="-89.0" x2="-177.5" y2="-271.9"/>
+<text class="role" x="-152.0" y="-243.0">bec_r4 1</text>
+<text class="role" x="-75.6" y="-109.9">observations 0..*</text>
+<line class="assoc" x1="-92.5" y1="10.8" x2="-419.1" y2="-75.0"/>
+<text class="role" x="-356.3" y="-63.6">c_exp 1</text>
+<text class="role" x="-147.3" y="7.4">observations_as_c_exp 0..*</text>
+<line class="assoc" x1="-83.9" y1="-22.1" x2="-410.4" y2="-107.9"/>
+<text class="role" x="-347.6" y="-96.4">c_imp 1</text>
+<text class="role" x="-138.7" y="-25.5">observations_as_c_imp 0..*</text>
+<line class="assoc" x1="-75.3" y1="-54.9" x2="-401.8" y2="-140.8"/>
+<text class="role" x="-339.0" y="-129.3">c_part 1</text>
+<text class="role" x="-130.0" y="-58.4">observations_as_c_part 0..*</text>
+<line class="assoc" x1="177.5" y1="-271.9" x2="58.1" y2="-89.0"/>
+<text class="role" x="83.6" y="-125.9">observations 0..*</text>
+<text class="role" x="160.0" y="-227.0">rank 1</text>
+<line class="assoc" x1="410.4" y1="-107.9" x2="83.9" y2="-22.1"/>
+<text class="role" x="146.7" y="-41.5">observations 0..*</text>
+<text class="role" x="355.6" y="-80.4">unit_measure 1</text>
+<line x1="83.9" y1="65.9" x2="350.0" y2="275.0" stroke="#9aa5b1" stroke-dasharray="4 3"/>
+<line x1="-37.8" y1="89.0" x2="-109.0" y2="257.0" stroke="#9aa5b1" stroke-dasharray="4 3"/>
+<line x1="37.8" y1="89.0" x2="109.0" y2="257.0" stroke="#9aa5b1" stroke-dasharray="4 3"/>
+<line x1="-83.9" y1="65.9" x2="-350.0" y2="275.0" stroke="#9aa5b1" stroke-dasharray="4 3"/>
+<rect class="box" x="-550.4" y="-159.3" width="140.0" height="66.0" rx="3"/>
+<text class="head" x="-480.4" y="-142.3" text-anchor="middle">Area</text>
+<line x1="-550.4" y1="-135.3" x2="-410.4" y2="-135.3" stroke="#2b3a4a"/>
+<text x="-542.4" y="-121.3">code: str {id}</text>
+<text x="-542.4" y="-105.3">label: str</text>
+<rect class="box" x="-269.0" y="-337.9" width="140.0" height="66.0" rx="3"/>
+<text class="head" x="-199.0" y="-320.9" text-anchor="middle">BecR4</text>
+<line x1="-269.0" y1="-313.9" x2="-129.0" y2="-313.9" stroke="#2b3a4a"/>
+<text x="-261.0" y="-299.9">code: str {id}</text>
+<text x="-261.0" y="-283.9">label: str</text>
+<rect class="box" x="-83.9" y="-89.0" width="167.8" height="178.0" rx="3"/>
+<text class="head" x="0.0" y="-72.0" text-anchor="middle">Observation</text>
+<line x1="-83.9" y1="-65.0" x2="83.9" y2="-65.0" stroke="#2b3a4a"/>
+<text x="-75.9" y="-51.0">base_period: BasePeriod</text>
+<text x="-75.9" y="-35.0">decimals: str</text>
+<text x="-75.9" y="-19.0">freq: Freq</text>
+<text x="-75.9" y="-3.0">measure: Measure</text>
+<text x="-75.9" y="13.0">obs_status: str</text>
+<text x="-75.9" y="29.0">obs_value: float</text>
+<text x="-75.9" y="45.0">sitc06: Sitc06</text>
+<text x="-75.9" y="61.0">time_period: str</text>
+<text x="-75.9" y="77.0">unit_mult: str</text>
+<rect class="box" x="129.0" y="-337.9" width="140.0" height="66.0" rx="3"/>
+<text class="head" x="199.0" y="-320.9" text-anchor="middle">Rank</text>
+<line x1="129.0" y1="-313.9" x2="269.0" y2="-313.9" stroke="#2b3a4a"/>
+<text x="137.0" y="-299.9">code: str {id}</text>
+<text x="137.0" y="-283.9">label: str</text>
+<rect class="box" x="410.4" y="-159.3" width="140.0" height="66.0" rx="3"/>
+<text class="head" x="480.4" y="-142.3" text-anchor="middle">UnitMeasure</text>
+<line x1="410.4" y1="-135.3" x2="550.4" y2="-135.3" stroke="#2b3a4a"/>
+<text x="418.4" y="-121.3">code: str {id}</text>
+<text x="418.4" y="-105.3">label: str</text>
+<rect class="box enum" x="-490.0" y="257.0" width="140.0" height="146.0" rx="3"/>
+<text class="kind" x="-420.0" y="253.0" text-anchor="middle">«enumeration»</text>
+<text class="head" x="-420.0" y="274.0" text-anchor="middle">BasePeriod</text>
+<line x1="-490.0" y1="281.0" x2="-350.0" y2="281.0" stroke="#2b3a4a"/>
+<text x="-482.0" y="295.0">C_1948</text>
+<text x="-482.0" y="311.0">C_1970</text>
+<text x="-482.0" y="327.0">C_2010</text>
+<text x="-482.0" y="343.0">C_2015</text>
+<text x="-482.0" y="359.0">C_2020</text>
+<text x="-482.0" y="375.0">C_2021</text>
+<text x="-482.0" y="391.0">... +2</text>
+<rect class="box enum" x="-210.0" y="257.0" width="140.0" height="146.0" rx="3"/>
+<text class="kind" x="-140.0" y="253.0" text-anchor="middle">«enumeration»</text>
+<text class="head" x="-140.0" y="274.0" text-anchor="middle">Freq</text>
+<line x1="-210.0" y1="281.0" x2="-70.0" y2="281.0" stroke="#2b3a4a"/>
+<text x="-202.0" y="295.0">A</text>
+<text x="-202.0" y="311.0">A10</text>
+<text x="-202.0" y="327.0">A2</text>
+<text x="-202.0" y="343.0">A20</text>
+<text x="-202.0" y="359.0">A3</text>
+<text x="-202.0" y="375.0">A30</text>
+<text x="-202.0" y="391.0">... +28</text>
+<rect class="box enum" x="70.0" y="257.0" width="140.0" height="146.0" rx="3"/>
+<text class="kind" x="140.0" y="253.0" text-anchor="middle">«enumeration»</text>
+<text class="head" x="140.0" y="274.0" text-anchor="middle">Measure</text>
+<line x1="70.0" y1="281.0" x2="210.0" y2="281.0" stroke="#2b3a4a"/>
+<text x="78.0" y="295.0">BAL_COM</text>
+<text x="78.0" y="311.0">COV</text>
+<text x="78.0" y="327.0">ECH</text>
+<text x="78.0" y="343.0">EXP_VAL_UNI</text>
+<text x="78.0" y="359.0">IMP</text>
+<text x="78.0" y="375.0">IMP_VAL_UNI</text>
+<text x="78.0" y="391.0">... +1</text>
+<rect class="box enum" x="350.0" y="257.0" width="140.0" height="146.0" rx="3"/>
+<text class="kind" x="420.0" y="253.0" text-anchor="middle">«enumeration»</text>
+<text class="head" x="420.0" y="274.0" text-anchor="middle">Sitc06</text>
+<line x1="350.0" y1="281.0" x2="490.0" y2="281.0" stroke="#2b3a4a"/>
+<text x="358.0" y="295.0">AER</text>
+<text x="358.0" y="311.0">ARM</text>
+<text x="358.0" y="327.0">CHE</text>
+<text x="358.0" y="343.0">COM</text>
+<text x="358.0" y="359.0">ELM</text>
+<text x="358.0" y="375.0">ELT</text>
+<text x="358.0" y="391.0">... +26</text>
+</svg>

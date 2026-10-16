@@ -1,0 +1,54 @@
+@startuml
+title LuxTrade
+hide empty methods
+skinparam classAttributeIconSize 0
+
+enum Flow {
+  EXPORT
+  IMPORT
+  RE_EXPORT
+}
+enum Freq {
+  A
+  B
+  D
+  H
+  M
+  N
+  Q
+  S
+  ... (1 more)
+}
+enum Indicators {
+  APQNTBASE
+  APQNTFLAG
+  APRODQNT
+  EXPQNT
+  EXPVAL
+  IMPQNT
+  IMPVAL
+  OWNPRODQNT
+  ... (36 more)
+}
+class Country {
+  code : str {id}
+  label : str
+}
+class Observation {
+  flow : Flow
+  freq : Freq
+  indicators : Indicators
+  obs_value : float [0..1]
+  time_period : str
+}
+class Product {
+  code : str {id}
+  label : str
+  level : int
+}
+Country "observations_as_partner 0..*" -- "partner 1" Observation : observation_partner
+Product "observations 0..*" -- "product 1" Observation : observation_product
+Country "observations_as_reporter 0..*" -- "reporter 1" Observation : observation_reporter
+Product "children 0..*" -- "parent 0..1" Product : product_hierarchy
+
+@enduml

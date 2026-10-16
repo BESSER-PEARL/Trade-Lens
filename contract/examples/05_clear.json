@@ -1,0 +1,8 @@
+{
+  "agent": {"name": "user", "run_id": "user-20261016-0002"},
+  "base_version": 4,
+  "message": "Clear what the agents drew; kept marks and pinned panels stay.",
+  "ops": [
+    {"op": "clear", "scope": "all"}
+  ]
+}

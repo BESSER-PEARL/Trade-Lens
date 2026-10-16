@@ -1,0 +1,455 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "besser-view-spec-1.0",
+  "title": "View spec 1.0 (contract 1.8)",
+  "description": "The declarative page that agents edit through ops (see ops.schema.json) and browsers render. Panels and marks carry queries on /insights (and /trends), never data: the renderer fetches, and every number on the page comes from the API. Contract 1.1 is additive: spec_version stays 1.0, so a 1.0 renderer still reads every 1.0 spec.",
+  "type": "object",
+  "required": ["spec_version", "version", "title", "next_mark_n", "panels", "layout", "marks"],
+  "additionalProperties": false,
+  "properties": {
+    "spec_version": {"const": "1.0"},
+    "version": {"type": "integer", "minimum": 0, "description": "0 is the baseline; every accepted batch, undo, redo or reset makes a new version."},
+    "title": {"$ref": "#/$defs/title"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "updated_by": {"$ref": "#/$defs/agent_name"},
+    "message": {"type": "string", "maxLength": 4000, "description": "The message of the batch that made this version, if any."},
+    "next_mark_n": {"type": "integer", "minimum": 1, "description": "The number the next mark gets. Mark numbers are monotonic and never reused; a mark's id is 'm' + its number."},
+    "next_story_n": {"type": "integer", "minimum": 1, "description": "Optional (contract 1.6): the page number the next new storyline gets. The backend keeps it and never lowers it, except when the page is reset or cleared (scope page), so a storyline keeps its number and a number is never given to another storyline."},
+    "context": {"$ref": "#/$defs/context"},
+    "panels": {
+      "type": "array",
+      "maxItems": 40,
+      "items": {"allOf": [{"$ref": "#/$defs/panel"}, {"required": ["agent", "pinned"]}]}
+    },
+    "layout": {"$ref": "#/$defs/layout"},
+    "marks": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {"$ref": "#/$defs/mark"}
+    }
+  },
+  "$defs": {
+    "title": {"type": "string", "minLength": 1, "maxLength": 160},
+    "label": {"type": "string", "minLength": 1, "maxLength": 80},
+    "agent_name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{1,39}$",
+      "description": "trend_finder, cause_finder, forecaster, visualizer, any registered agent, 'user' (the person at the page) or 'baseline' (version 0 only)."
+    },
+    "panel_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,47}$"},
+    "mark_id": {"type": "string", "pattern": "^m[1-9][0-9]*$"},
+    "key": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,31}$"},
+    "period": {
+      "type": "string",
+      "pattern": "^[0-9]{4}(-(0[1-9]|1[0-2]))?$",
+      "description": "A year (2025) or a month (2025-03)."
+    },
+    "geo_code": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,11}$", "description": "A partner or reporter code: FR, CN, EU27_2020."},
+    "code": {"type": "string", "pattern": "^[A-Za-z0-9_]{1,16}$", "description": "Any dimension code: a country (FR), a product (85, 8517, 85171300), OTHER."},
+    "endpoint": {
+      "type": "string",
+      "enum": [
+        "/insights/meta",
+        "/insights/ranking",
+        "/insights/ranking/records",
+        "/insights/ladder",
+        "/insights/series",
+        "/insights/movers",
+        "/insights/compare",
+        "/insights/compare/records",
+        "/insights/specialisation",
+        "/insights/specialisation/records",
+        "/insights/trend",
+        "/insights/trends",
+        "/insights/forecast",
+        "/insights/events",
+        "/insights/flows",
+        "/insights/matrix",
+        "/insights/tree",
+        "/trends/analyze",
+        "/trends/seasonal-heatmap"
+      ]
+    },
+    "context": {
+      "type": "object",
+      "required": ["period", "product"],
+      "additionalProperties": false,
+      "description": "What the page is about: the year (or month) and the goods the user's Year and Goods controls show, and (1.4) who it is read by. Panels follow it through the placeholders $period, $previous (the year before $period: 2025 -> 2024, 2025-03 -> 2024-03) and $product in their query params (1.4: $start, the first year of a range, in start). Changed with the set_context op. A spec without context reads as {period: 2025, product: TOTAL}.",
+      "properties": {
+        "period": {"$ref": "#/$defs/period"},
+        "product": {"$ref": "#/$defs/code", "description": "TOTAL (all goods) or an HS code: 85, 8517, 85171300."},
+        "flow": {"enum": ["IMPORT", "EXPORT", "BOTH"], "description": "Optional emphasis; BOTH (or absent) shows both flows."},
+        "start": {"type": "string", "pattern": "^[0-9]{4}$", "description": "Optional (contract 1.4): the first year of a range the page's totals sum over (the From control), up to the year in period (the To control). Panels follow it through the placeholder $start (in start). Absent, after period, or with a month as period: a single period, $start reads as period."},
+        "persona": {"type": "string", "pattern": "^[a-z][a-z_]{1,31}$", "description": "Optional (contract 1.4): who the page is drawn for, the id of a persona profile in contract/personas/persona_profiles.json (statec_analyst, journalist, citizen...). It changes panels, wording and depth, never a figure. Absent: the page as it was before personas."}
+      }
+    },
+    "panel_context": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "description": "Optional (contract 1.5): the panel's own year and goods, which win over the page context for this panel only: its queries, inline facts and the marks drawn on it fill $period, $previous, $start and $product from {...spec.context, ...panel.context}. A period without a start is a single period (start reads as period). Set with the set_panel_context op; absent: the panel follows the page.",
+      "properties": {
+        "period": {"$ref": "#/$defs/period"},
+        "start": {"type": "string", "pattern": "^[0-9]{4}$", "description": "The From year of a range, up to period (the To year)."},
+        "product": {"$ref": "#/$defs/code", "description": "TOTAL (all goods) or an HS code."}
+      }
+    },
+    "params": {
+      "type": "object",
+      "description": "Query-string parameters: dimension filters (flow=EXPORT, partner=FR, product=85) and the endpoint's own parameters. Scalars only, so no data can travel in a spec. A value may be a context placeholder: $period or $previous (in period, previous, start, end, base), $start (1.4, in start: context.start, else the period) or $product (in product, parent); the renderer and the backend's pre-flight substitute it from spec.context.",
+      "maxProperties": 16,
+      "propertyNames": {"pattern": "^[a-z_][a-z0-9_]{0,31}$"},
+      "additionalProperties": {
+        "type": ["string", "integer", "number", "boolean"],
+        "maxLength": 200
+      }
+    },
+    "tone": {
+      "enum": ["exports", "imports", "neutral"],
+      "description": "Data colour: exports sky blue, imports steel grey. Agent colours are for marks only."
+    },
+    "query": {
+      "type": "object",
+      "required": ["endpoint", "params"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {"$ref": "#/$defs/key", "description": "Name of the query inside its panel (imports, exports, in, out, main). Marks refer to it as 'series', facts as 'query'."},
+        "endpoint": {"$ref": "#/$defs/endpoint"},
+        "params": {"$ref": "#/$defs/params"},
+        "label": {"$ref": "#/$defs/label"},
+        "tone": {"$ref": "#/$defs/tone"}
+      }
+    },
+    "path": {
+      "type": "string",
+      "maxLength": 120,
+      "pattern": "^(-?[0-9]+|#length|#position|[A-Za-z_][A-Za-z0-9_]*|\\[[A-Za-z_][A-Za-z0-9_]*=[^\\].]+\\])(\\.(-?[0-9]+|#length|#position|[A-Za-z_][A-Za-z0-9_]*|\\[[A-Za-z_][A-Za-z0-9_]*=[^\\].]+\\]))*$",
+      "description": "Where a value sits in an API response, as dot-separated segments: a key (total), an index (0, -1 from the end), [field=value] (the first array item whose field equals value, e.g. [code=FR]), #length (array length) and #position (1-based position of the item just selected by [field=value]). Examples: total, n_items, items.[code=CN].value, -1.value, [is_focus=true].#position, peers.#length."
+    },
+    "format": {
+      "anyOf": [
+        {"enum": ["eur", "eur_signed", "pct", "pct_signed", "percent", "percent_signed", "number", "int", "ordinal", "period", "text", "qty", "tonnes"]},
+        {"type": "string", "pattern": "^qty:[^{}<>]{1,40}$"}
+      ],
+      "description": "eur: 25097941118 -> €25.1 bn, 613389780 -> €613 m. pct: a fraction (0.875 -> 87%). percent: already in percent (5.5 -> 5.5%). *_signed adds + or −. ordinal: 27 -> 27th. text: as is (a name). 1.8, quantities (a query with measure weight, units or all): qty, a count (37654 -> 37,654); qty:<unit>, the count and its unit (qty:cars -> 37,654 cars); tonnes (122464.3 -> 122,464 t)."
+    },
+    "fact_name": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,31}$"},
+    "fact": {
+      "description": "A number (or name) the renderer resolves from the API and puts where {name} appears in a text. Three forms: from one of the panel's own queries {query, path}; from an inline query {endpoint, params, path} (marks have no queries of their own); derived from other facts {op, of}.",
+      "type": "object",
+      "if": {"required": ["op"]},
+      "then": {
+        "required": ["op", "of"],
+        "additionalProperties": false,
+        "properties": {
+          "op": {"enum": ["diff", "sum", "ratio", "growth", "abs"], "description": "diff a-b, sum a+b, ratio a/b, growth a/b-1, abs |a|."},
+          "of": {"type": "array", "minItems": 1, "maxItems": 2, "items": {"$ref": "#/$defs/fact_name"}},
+          "format": {"$ref": "#/$defs/format"}
+        }
+      },
+      "else": {
+        "if": {"required": ["query"]},
+        "then": {
+          "required": ["query", "path"],
+          "additionalProperties": false,
+          "properties": {
+            "query": {"$ref": "#/$defs/key"},
+            "path": {"$ref": "#/$defs/path"},
+            "format": {"$ref": "#/$defs/format"}
+          }
+        },
+        "else": {
+          "required": ["endpoint", "params", "path"],
+          "additionalProperties": false,
+          "properties": {
+            "endpoint": {"$ref": "#/$defs/endpoint"},
+            "params": {"$ref": "#/$defs/params"},
+            "path": {"$ref": "#/$defs/path"},
+            "format": {"$ref": "#/$defs/format"}
+          }
+        }
+      }
+    },
+    "facts": {
+      "type": "object",
+      "maxProperties": 20,
+      "propertyNames": {"$ref": "#/$defs/fact_name"},
+      "additionalProperties": {"$ref": "#/$defs/fact"}
+    },
+    "template": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1200,
+      "description": "Prose with {fact} placeholders. Figures (amounts, percentages) must come from facts, never be typed in; years and codes may be written."
+    },
+    "source": {
+      "type": "object",
+      "required": ["url"],
+      "additionalProperties": false,
+      "properties": {
+        "url": {"type": "string", "minLength": 1, "maxLength": 1000, "description": "An API call relative to the backend (/insights/ranking?by=partner&...) or another source (a URL, a file in the repo)."},
+        "label": {"type": "string", "maxLength": 160}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Who made it and from what. In ops every field is optional: the backend fills agent, run_id and created_at and appends the URL of every query it pre-flighted to sources.",
+      "properties": {
+        "agent": {"$ref": "#/$defs/agent_name"},
+        "run_id": {"$ref": "#/$defs/run_id"},
+        "created_at": {"type": "string", "format": "date-time"},
+        "sources": {"type": "array", "maxItems": 30, "items": {"$ref": "#/$defs/source"}}
+      }
+    },
+    "full_provenance": {
+      "allOf": [{"$ref": "#/$defs/provenance"}, {"required": ["agent", "created_at", "sources"]}]
+    },
+    "run_id": {"type": "string", "pattern": "^[A-Za-z0-9_.:-]{1,64}$"},
+    "panel_type": {
+      "enum": ["kpi", "bar", "line", "table", "flow", "text", "waterfall", "choropleth", "flowmap", "heatmap", "treemap",
+               "butterfly", "bump", "scatter", "compare"],
+      "description": "1.0: kpi, bar, line, table, flow, text. 1.1: waterfall (main: /insights/movers), choropleth (main: /insights/ranking by partner, or /insights/flows for measure balance), flowmap (main: /insights/flows), heatmap (main: /insights/series freq M, /insights/matrix or /trends/seasonal-heatmap, by options.kind; analysis?: /trends/analyze, for facts),treemap (main: /insights/tree), butterfly (in and out: /insights/ranking), bump (main: /insights/matrix measure rank), scatter (main: /insights/specialisation, growth?: /insights/movers or /insights/trends). 1.2: compare, either 1 to 6 series over time (every query on /insights/series, one per partner, product or reporter; the key names the series and the label is its direct label) or two snapshots side by side (queries a and b on the same /insights/ranking or /insights/compare, e.g. two years), drawn in options.compare mode."
+    },
+    "compare_mode": {
+      "enum": ["absolute", "index", "share", "yoy", "diff"],
+      "description": "How a comparison is drawn. absolute: the values. index: each series rebased to 100 at options.base_period (default: the first period they share). share: each series as a share of options.reference (a query key, e.g. the world total), or of the sum of the series shown. yoy: growth against the previous period (the same month a year earlier for monthly series); on two snapshots, the growth from a to b. diff: each series minus options.reference (a query key); on two snapshots, b minus a. There is no per-capita mode: the data has no population source."
+    },
+    "panel": {
+      "type": "object",
+      "required": ["id", "type", "title", "queries"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref": "#/$defs/panel_id"},
+        "type": {"$ref": "#/$defs/panel_type"},
+        "title": {"$ref": "#/$defs/title"},
+        "subtitle": {"type": "string", "maxLength": 200},
+        "text": {"$ref": "#/$defs/template", "description": "kpi: the caption under the figure. text: the body (rendered in the serif). Others: a caption under the chart."},
+        "facts": {"$ref": "#/$defs/facts"},
+        "value": {"$ref": "#/$defs/fact_name", "description": "kpi only: the fact shown as the big figure."},
+        "queries": {"type": "array", "maxItems": 8, "items": {"allOf": [{"$ref": "#/$defs/query"}, {"required": ["key"]}]}},
+        "options": {"$ref": "#/$defs/options"},
+        "pinned": {"type": "boolean", "description": "Pinned panels survive clear and cannot be removed."},
+        "agent": {"$ref": "#/$defs/agent_name", "description": "Who created the panel; 'baseline' for the panels of version 0."},
+        "provenance": {"$ref": "#/$defs/provenance"},
+        "context": {"$ref": "#/$defs/panel_context"}
+      },
+      "allOf": [
+        {"if": {"properties": {"type": {"const": "kpi"}}, "required": ["type"]},
+         "then": {"required": ["value", "facts"], "properties": {"queries": {"minItems": 1}}}},
+        {"if": {"properties": {"type": {"const": "text"}}, "required": ["type"]},
+         "then": {"required": ["text", "provenance"]}},
+        {"if": {"properties": {"type": {"enum": ["bar", "line", "table"]}}, "required": ["type"]},
+         "then": {"properties": {"queries": {"minItems": 1}}}},
+        {"if": {"properties": {"type": {"const": "flow"}}, "required": ["type"]},
+         "then": {"properties": {"queries": {"minItems": 2, "maxItems": 2}}}},
+        {"if": {"properties": {"type": {"enum": ["waterfall", "flowmap", "treemap", "bump"]}}, "required": ["type"]},
+         "then": {"properties": {"queries": {"minItems": 1, "maxItems": 1}}}},
+        {"if": {"properties": {"type": {"const": "butterfly"}}, "required": ["type"]},
+         "then": {"properties": {"queries": {"minItems": 2, "maxItems": 2}}}},
+        {"if": {"properties": {"type": {"const": "choropleth"}}, "required": ["type"]},
+         "then": {"properties": {"queries": {"minItems": 1, "maxItems": 1},
+                                 "options": {"properties": {"measure": {"enum": ["share", "balance", "value"]},
+                                                            "extent": {"enum": ["world", "europe"]}}}}}},
+        {"if": {"properties": {"type": {"const": "flowmap"}}, "required": ["type"]},
+         "then": {"properties": {"options": {"properties": {"flow": {"enum": ["imports", "exports", "both"]},
+                                                            "extent": {"enum": ["world", "europe"]}}}}}},
+        {"if": {"properties": {"type": {"const": "heatmap"}}, "required": ["type"]},
+         "then": {"required": ["options"],
+                  "properties": {"queries": {"minItems": 1, "maxItems": 2},
+                                 "options": {"required": ["kind"],
+                                             "properties": {"kind": {"enum": ["month_year", "product_year", "seasonal"]}}}}}},
+        {"if": {"properties": {"type": {"const": "scatter"}}, "required": ["type"]},
+         "then": {"required": ["options"],
+                  "properties": {"queries": {"minItems": 1, "maxItems": 2},
+                                 "options": {"required": ["x", "y"],
+                                             "properties": {"x": {"$ref": "#/$defs/field"}, "y": {"$ref": "#/$defs/field"},
+                                                            "size": {"$ref": "#/$defs/field"}}}}}},
+        {"if": {"properties": {"type": {"const": "compare"}}, "required": ["type"]},
+         "then": {"properties": {"queries": {"minItems": 1, "maxItems": 6},
+                                 "options": {"$ref": "#/$defs/compare_options"}}}},
+        {"if": {"properties": {"type": {"const": "line"}}, "required": ["type"]},
+         "then": {"properties": {"options": {"$ref": "#/$defs/compare_options"}}}},
+        {"if": {"properties": {"type": {"const": "bar"}}, "required": ["type"]},
+         "then": {"properties": {"options": {"properties": {
+                    "compare": {"enum": ["absolute", "share", "yoy", "diff"]},
+                    "sort": {"enum": ["b", "a", "delta"]},
+                    "focus": {"$ref": "#/$defs/code"},
+                    "measure": {"enum": ["growth"], "description": "Contract 1.7: growth draws each item's growth per year over a span (the compound annual growth of /insights/trends, query main), sorted, with its first and last value; the query needs start."}}}}}}
+      ]
+    },
+    "compare_options": {
+      "description": "The comparison options of a compare panel, also accepted by a line (series over time). A bar takes compare, sort and focus for two snapshots a and b.",
+      "properties": {
+        "compare": {"$ref": "#/$defs/compare_mode"},
+        "base_period": {"$ref": "#/$defs/period", "description": "index: the period every series is 100 at. Default: the first period the series share."},
+        "reference": {"$ref": "#/$defs/key", "description": "share: the query everything is a share of (not drawn as a line); diff: the query subtracted from the others (drawn as the zero line)."},
+        "focus": {"type": "string", "pattern": "^[A-Za-z0-9_]{1,32}$", "description": "Series over time: the query key drawn in sky (default: the first query); the others are greys. Two snapshots: a row code to emphasise (LU)."},
+        "facet": {"type": "boolean", "description": "Small multiples: one small chart per series (2 to 6), on one shared scale, with the other series as faint context."},
+        "align": {"enum": ["time", "month"], "description": "month: monthly series of different years on one January-to-December axis (2025 against 2024, month by month). Default time."},
+        "balance": {"type": "boolean", "description": "Exports against imports: shade the gap between the two series and read out the balance (exports minus imports). Needs exactly two series, flow EXPORT and flow IMPORT, in absolute mode."},
+        "sort": {"enum": ["b", "a", "delta"], "description": "Two snapshots: rows by b (default), by a, or by the size of the change."},
+        "limit": {"type": "integer", "minimum": 1, "maximum": 30, "description": "Two snapshots: rows shown (default 8)."}
+      }
+    },
+    "field": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,31}$", "description": "A field of the rows a query returns (rca, growth, value, share)."},
+    "options": {
+      "type": "object",
+      "maxProperties": 20,
+      "description": "Rendering hints, scalars or short lists of strings. Known: x, y (response fields), format (see format), orientation (horizontal|vertical), limit (rows shown), exclude_codes, reference (a value drawn as a tick, e.g. 1 for RCA), gap_fill (line: shade between two series), highlight_focus (bar: emphasise the is_focus row), center_label (flow), columns (table). 1.1: limit (waterfall: steps shown, default 8; bump: lines; butterfly: rows; treemap: tiles), show_other (waterfall: a step for everything not shown, so the bars add up; default true), measure (choropleth: share|balance|value, default share; 1.7, bar: growth, the growth per year since start from /insights/trends), extent (choropleth, flowmap: world|europe, default europe), flow (flowmap: imports|exports|both, default both), kind (heatmap, required: month_year|product_year|seasonal), scale (heatmap: value|deviation, default value), size (scatter: the bubble field; x and y are required on a scatter), labels (scatter, bump: codes to label), log_x, log_y (scatter), reference_x, reference_y (scatter: a rule, e.g. 1 for RCA, 0 for growth).",
+      "propertyNames": {"pattern": "^[a-z][a-z0-9_]{0,31}$"},
+      "additionalProperties": {
+        "anyOf": [
+          {"type": ["string", "integer", "number", "boolean"], "maxLength": 200},
+          {"type": "array", "maxItems": 30, "items": {"type": "string", "maxLength": 80}}
+        ]
+      }
+    },
+    "layout": {
+      "type": "object",
+      "required": ["rows"],
+      "additionalProperties": false,
+      "properties": {
+        "rows": {
+          "type": "array",
+          "maxItems": 30,
+          "items": {
+            "type": "object",
+            "required": ["panels"],
+            "additionalProperties": false,
+            "properties": {
+              "label": {"$ref": "#/$defs/label"},
+              "panels": {"type": "array", "minItems": 1, "maxItems": 3, "uniqueItems": true, "items": {"$ref": "#/$defs/panel_id"}}
+            }
+          }
+        }
+      }
+    },
+    "mark_kind": {"enum": ["thread", "trend", "event", "forecast", "annotation", "highlight", "trend_break"]},
+    "mark_body": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref": "#/$defs/mark_id"},
+        "n": {"type": "integer", "minimum": 1},
+        "story_n": {"type": "integer", "minimum": 1, "description": "Optional (contract 1.6), set by the backend: the page number of the mark's storyline, the [n] of the chat and the circle on the chart. Every mark of a storyline carries the same one; it stays while the storyline is on the page and is never given to another storyline."},
+        "kind": {"$ref": "#/$defs/mark_kind"},
+        "agent": {"$ref": "#/$defs/agent_name"},
+        "target": {"$ref": "#/$defs/panel_id", "description": "The panel the mark is drawn on."},
+        "series": {"$ref": "#/$defs/key", "description": "Key of one of the target panel's queries (exports, imports)."},
+        "note": {"$ref": "#/$defs/template", "description": "What the agent says about the mark, shown in the panel next to its number. Figures only through {fact}."},
+        "facts": {"$ref": "#/$defs/facts"},
+        "params": {"type": "object"},
+        "query": {"$ref": "#/$defs/query", "description": "Where the mark's own shape comes from: required for trend (/insights/trend) and forecast (/insights/forecast)."},
+        "status": {"enum": ["proposed", "kept"], "description": "proposed until the user keeps it; clear never removes kept marks."},
+        "thread": {"$ref": "#/$defs/key", "description": "Storyline group: marks that share it are one numbered note on the page."},
+        "period": {"$ref": "#/$defs/period", "description": "The year or month the mark is about. The page dims a mark whose period does not match spec.context.period (a year matches its months). Leave it out for marks about a span or the whole series."},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      },
+      "allOf": [
+        {"if": {"properties": {"kind": {"const": "thread"}}, "required": ["kind"]},
+         "then": {"properties": {"params": {"$ref": "#/$defs/params_thread"}}}},
+        {"if": {"properties": {"kind": {"const": "trend"}}, "required": ["kind"]},
+         "then": {"required": ["query"], "properties": {"params": {"$ref": "#/$defs/params_trend"},
+                  "query": {"properties": {"endpoint": {"const": "/insights/trend"}}}}}},
+        {"if": {"properties": {"kind": {"const": "event"}}, "required": ["kind"]},
+         "then": {"properties": {"params": {"$ref": "#/$defs/params_event"}}}},
+        {"if": {"properties": {"kind": {"const": "forecast"}}, "required": ["kind"]},
+         "then": {"required": ["query"], "properties": {"params": {"$ref": "#/$defs/params_forecast"},
+                  "query": {"properties": {"endpoint": {"const": "/insights/forecast"}}}}}},
+        {"if": {"properties": {"kind": {"const": "annotation"}}, "required": ["kind"]},
+         "then": {"properties": {"params": {"$ref": "#/$defs/params_annotation"}}}},
+        {"if": {"properties": {"kind": {"const": "highlight"}}, "required": ["kind"]},
+         "then": {"properties": {"params": {"$ref": "#/$defs/params_highlight"}}}},
+        {"if": {"properties": {"kind": {"const": "trend_break"}}, "required": ["kind"]},
+         "then": {"properties": {"params": {"$ref": "#/$defs/params_trend_break"},
+                  "query": {"properties": {"endpoint": {"const": "/trends/analyze"}}}}}}
+      ]
+    },
+    "mark": {
+      "allOf": [
+        {"$ref": "#/$defs/mark_body"},
+        {"required": ["id", "n", "kind", "agent", "target", "note", "params", "status", "provenance"],
+         "properties": {"provenance": {"$ref": "#/$defs/full_provenance"}}}
+      ]
+    },
+    "params_thread": {
+      "type": "object",
+      "required": ["in_code", "out_code", "label"],
+      "additionalProperties": false,
+      "description": "One path through the crossroads: bought from in_code, sold to out_code, optionally for one product.",
+      "properties": {
+        "in_code": {"$ref": "#/$defs/geo_code"},
+        "out_code": {"$ref": "#/$defs/geo_code"},
+        "product": {"$ref": "#/$defs/code"},
+        "label": {"$ref": "#/$defs/label"}
+      }
+    },
+    "params_trend": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": {"$ref": "#/$defs/label"},
+        "start": {"$ref": "#/$defs/period"},
+        "end": {"$ref": "#/$defs/period"}
+      }
+    },
+    "params_event": {
+      "type": "object",
+      "required": ["at", "label"],
+      "additionalProperties": false,
+      "description": "A dated rule (a span when until is given).",
+      "properties": {
+        "at": {"$ref": "#/$defs/period"},
+        "until": {"$ref": "#/$defs/period"},
+        "label": {"$ref": "#/$defs/label"},
+        "event_id": {"type": "string", "pattern": "^[a-z0-9_-]{1,64}$", "description": "Id in /insights/events."}
+      }
+    },
+    "params_forecast": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": {"$ref": "#/$defs/label"},
+        "scenarios": {"type": "boolean", "description": "Since 1.3: also draw the response's scenarios (for example 'the smartphone line stops / continues') as labelled points at the end of the band. Default false."}
+      }
+    },
+    "params_annotation": {
+      "type": "object",
+      "required": ["x", "label"],
+      "additionalProperties": false,
+      "description": "A leader line to the panel's own data point at x. The y is read from the data by the renderer and is never given.",
+      "properties": {
+        "x": {"type": "string", "minLength": 1, "maxLength": 16, "description": "A period on a line (2020, 2020-03) or a row code on a bar (FR, 85)."},
+        "label": {"$ref": "#/$defs/label"},
+        "y": {"not": {}, "description": "Never allowed."}
+      }
+    },
+    "params_highlight": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "codes: bars, Sankey nodes, table rows, countries (choropleth, flowmap), tiles (treemap), rows (butterfly, bump) or bubbles (scatter); from/to: a span on a line.",
+      "properties": {
+        "codes": {"type": "array", "minItems": 1, "maxItems": 20, "uniqueItems": true, "items": {"$ref": "#/$defs/code"}},
+        "from": {"$ref": "#/$defs/period"},
+        "to": {"$ref": "#/$defs/period"},
+        "label": {"$ref": "#/$defs/label"}
+      },
+      "anyOf": [{"required": ["codes"]}, {"required": ["from", "to"]}]
+    },
+    "params_trend_break": {
+      "type": "object",
+      "required": ["at"],
+      "additionalProperties": false,
+      "description": "A lasting shift in a series' level (a change point of /trends/analyze) at a period. before and after name facts of the mark that hold the level on each side (changepoints.[period=2009-01].before_mean); the renderer draws them as two level lines, from 'from' to 'at' and from 'at' to 'to' (default: 6 periods each side).",
+      "properties": {
+        "at": {"$ref": "#/$defs/period"},
+        "label": {"$ref": "#/$defs/label"},
+        "before": {"$ref": "#/$defs/fact_name"},
+        "after": {"$ref": "#/$defs/fact_name"},
+        "from": {"$ref": "#/$defs/period"},
+        "to": {"$ref": "#/$defs/period"}
+      }
+    }
+  }
+}

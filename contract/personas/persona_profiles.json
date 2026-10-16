@@ -1,0 +1,682 @@
+{
+  "schema": "besser-persona-profile-1.0",
+  "note": "The six reader profiles of the Trade Explorer (contract 1.4: spec.context.persona). One source of truth: the page reads a copy (app/frontend/src/view/personas/, tests/test_personas.py checks it), the agent reads this file. A profile changes panels, wording, depth and questions, never a figure. Proto-personas grounded on the ONS persona research and the Eurostat user survey, not yet validated with STATEC users; model/personas_user_model.py holds the same readers as BESSER user models.",
+  "profiles": [
+    {
+      "id": "statec_analyst",
+      "label": "STATEC analyst",
+      "tagline": "Every figure, its code, its query and its caveats",
+      "archetype": "expert_analyst",
+      "literacy": "expert",
+      "devices": [
+        "desktop"
+      ],
+      "jury_link": [
+        "Head of Macroeconomic statistics",
+        "Head of Economic conditions, modelling, forecasting"
+      ],
+      "default_view": {
+        "context": {
+          "period": "2025",
+          "product": "TOTAL",
+          "flow": "BOTH"
+        },
+        "show_panels": [
+          "headline",
+          "kpi_imports",
+          "kpi_balance",
+          "kpi_exports",
+          "crossroads",
+          "trend",
+          "mix_export",
+          "specialisation",
+          "peers"
+        ],
+        "hide_panels": [],
+        "variant_ops": "statec_analyst"
+      },
+      "agents": {
+        "enabled": [
+          "trend_finder",
+          "cause_finder",
+          "forecaster",
+          "visualizer",
+          "general"
+        ],
+        "lead": "trend_finder",
+        "max_per_question": 3,
+        "show_agent_cards": true
+      },
+      "answer": {
+        "depth": "full",
+        "max_sentences": 6,
+        "lead_with": "figure",
+        "show_codes": true,
+        "show_sources": "inline",
+        "show_method": true,
+        "uncertainty": "backtest",
+        "quotable_sentence": false,
+        "caveats": "full"
+      },
+      "charts": {
+        "prefer": [
+          "waterfall",
+          "heatmap",
+          "table",
+          "line",
+          "compare"
+        ],
+        "avoid": [
+          "treemap"
+        ],
+        "max_new_panels": 3,
+        "charts_first": false
+      },
+      "vocabulary": {
+        "revealed comparative advantage": "revealed comparative advantage (RCA, Balassa, against the 26 other EU countries)",
+        "product line": "CN8 line",
+        "concentration": "Herfindahl-Hirschman index"
+      },
+      "suggested_questions": [
+        "Why did exports jump in 2025?",
+        "Which CN8 lines explain the 2025 export change?",
+        "When did monthly exports shift for good since 1999?",
+        "Which forecasting method works best here?"
+      ],
+      "hide": [],
+      "show": [
+        "api_urls",
+        "provenance_panel",
+        "method_notes",
+        "version_history",
+        "download_csv"
+      ],
+      "presentation": {
+        "agentLanguage": "english",
+        "agentStyle": "technical",
+        "languageComplexity": "complex",
+        "sentenceLength": "verbose",
+        "useAbbreviations": true,
+        "interfaceStyle": {
+          "size": 14,
+          "contrast": "medium"
+        }
+      },
+      "prompt_snippet": "The reader is a STATEC trade statistician. Give the full chain: the total, the HS2 chapter, the CN8 code and name, the partners, and what share of the change it explains. Write codes next to names (CN8 85171300). Name the method (STL, change-point penalty, ensemble with its backtest skill against the seasonal naive). Say which months of 2026 are provisional and that dates lining up are not causes. Draw the waterfall and the drill-down when a change is asked about. Up to six sentences.",
+      "leaves_when": [
+        "a figure cannot be traced to a query",
+        "an AI rounds or computes a number",
+        "'not loaded' shows as zero",
+        "revisions and provisional months are not flagged"
+      ]
+    },
+    {
+      "id": "policy_adviser",
+      "label": "Policy adviser",
+      "tagline": "Exposure, peers and outlook, ready for a briefing note",
+      "archetype": "policymaker",
+      "literacy": "intermediate",
+      "devices": [
+        "laptop",
+        "phone"
+      ],
+      "jury_link": [
+        "External Relations",
+        "Minister for the Economy (Journee de la Statistique)"
+      ],
+      "default_view": {
+        "context": {
+          "period": "2025",
+          "product": "TOTAL",
+          "flow": "BOTH"
+        },
+        "show_panels": [
+          "headline",
+          "kpi_imports",
+          "kpi_balance",
+          "kpi_exports",
+          "crossroads",
+          "trend",
+          "peers"
+        ],
+        "hide_panels": [
+          "mix_export",
+          "specialisation"
+        ],
+        "variant_ops": "policy_adviser",
+        "panel_titles": {
+          "peers": "Luxembourg among the 27 EU countries"
+        }
+      },
+      "agents": {
+        "enabled": [
+          "trend_finder",
+          "cause_finder",
+          "forecaster",
+          "visualizer",
+          "general"
+        ],
+        "lead": "trend_finder",
+        "max_per_question": 2,
+        "show_agent_cards": true
+      },
+      "answer": {
+        "depth": "brief",
+        "max_sentences": 4,
+        "lead_with": "so_what",
+        "show_codes": false,
+        "show_sources": "footer",
+        "show_method": false,
+        "uncertainty": "interval",
+        "quotable_sentence": true,
+        "caveats": "one_line"
+      },
+      "charts": {
+        "prefer": [
+          "choropleth",
+          "compare",
+          "line",
+          "waterfall"
+        ],
+        "avoid": [
+          "heatmap",
+          "scatter",
+          "bump"
+        ],
+        "max_new_panels": 2,
+        "charts_first": false
+      },
+      "vocabulary": {
+        "RCA": "specialisation (a product's share of Luxembourg's exports compared with the EU average)",
+        "CN8": "product line",
+        "HS2 chapter": "product group",
+        "Herfindahl": "concentration"
+      },
+      "suggested_questions": [
+        "Show our exports to the United States. Show the months since 2023",
+        "How dependent is Luxembourg on its three neighbours?",
+        "Compare Luxembourg with Belgium and Germany",
+        "What should we expect for 2026?"
+      ],
+      "hide": [
+        "api_urls",
+        "method_notes"
+      ],
+      "show": [
+        "citation_line",
+        "copy_chart"
+      ],
+      "presentation": {
+        "agentLanguage": "english",
+        "agentStyle": "formal",
+        "languageComplexity": "medium",
+        "sentenceLength": "concise",
+        "useAbbreviations": false,
+        "interfaceStyle": {
+          "size": 16,
+          "contrast": "medium"
+        }
+      },
+      "prompt_snippet": "The reader is a policy adviser preparing a note for a minister. Start with what it means (exposure, dependence, direction), then at most three figures. Compare with Belgium, Germany or the EU when it helps. Give a forecast as a range with its scenarios, in one sentence. No codes, no method names; one line of caveat. Four sentences at most, formal tone, neutral: describe, never recommend a policy.",
+      "leaves_when": [
+        "jargon (RCA, CN8, MASE) without a plain meaning",
+        "no neutral source line to cite",
+        "an answer that takes a policy side",
+        "nothing to copy into a note"
+      ]
+    },
+    {
+      "id": "journalist",
+      "label": "Journalist",
+      "tagline": "The story, one chart and a sentence you can quote",
+      "archetype": "information_forager",
+      "literacy": "intermediate",
+      "devices": [
+        "laptop",
+        "phone"
+      ],
+      "jury_link": [
+        "Head of Communication"
+      ],
+      "default_view": {
+        "context": {
+          "period": "2025",
+          "product": "TOTAL",
+          "flow": "BOTH"
+        },
+        "show_panels": [
+          "headline",
+          "kpi_imports",
+          "kpi_balance",
+          "kpi_exports",
+          "crossroads",
+          "trend"
+        ],
+        "hide_panels": [
+          "mix_export",
+          "specialisation",
+          "peers"
+        ],
+        "variant_ops": "journalist"
+      },
+      "agents": {
+        "enabled": [
+          "trend_finder",
+          "cause_finder",
+          "forecaster",
+          "visualizer",
+          "general"
+        ],
+        "lead": "trend_finder",
+        "max_per_question": 1,
+        "show_agent_cards": false
+      },
+      "answer": {
+        "depth": "headline",
+        "max_sentences": 3,
+        "lead_with": "figure",
+        "show_codes": false,
+        "show_sources": "footer",
+        "show_method": false,
+        "uncertainty": "plain_range",
+        "quotable_sentence": true,
+        "caveats": "one_line"
+      },
+      "charts": {
+        "prefer": [
+          "flowmap",
+          "choropleth",
+          "line",
+          "waterfall"
+        ],
+        "avoid": [
+          "heatmap",
+          "scatter",
+          "bump",
+          "table"
+        ],
+        "max_new_panels": 1,
+        "charts_first": true
+      },
+      "vocabulary": {
+        "CN8 85171300": "smartphones",
+        "HS2 chapter": "product group",
+        "RCA": "goods Luxembourg sells more of than other EU countries"
+      },
+      "suggested_questions": [
+        "Why did exports jump in 2025?",
+        "Where do the goods go?",
+        "What did COVID-19 do to trade?",
+        "Compare 2025 with 2024"
+      ],
+      "hide": [
+        "agent_cards",
+        "api_urls",
+        "codes",
+        "method_notes",
+        "proposed_marks_counter"
+      ],
+      "show": [
+        "citation_line",
+        "copy_chart"
+      ],
+      "presentation": {
+        "agentLanguage": "english",
+        "agentStyle": "informal",
+        "languageComplexity": "medium",
+        "sentenceLength": "concise",
+        "useAbbreviations": false,
+        "interfaceStyle": {
+          "size": 16,
+          "contrast": "medium"
+        }
+      },
+      "prompt_snippet": "The reader is a journalist on deadline. Lead with the one figure that is the story and the one reason the data shows for it. Name products in plain words (smartphones), never codes. Draw one chart at most, the one that tells the story (a route on the map or the crossroads). End with one sentence she can quote as is, then 'Source: Eurostat ds-045409, data produced by STATEC'. Three sentences at most. Say plainly what the data cannot show (causes).",
+      "leaves_when": [
+        "the story is buried under method",
+        "the answer takes more than a few seconds",
+        "codes instead of names",
+        "no clear source line to credit"
+      ]
+    },
+    {
+      "id": "exporter",
+      "label": "Business owner",
+      "tagline": "Who buys your product line, and which markets grow",
+      "archetype": "information_forager",
+      "literacy": "intermediate",
+      "devices": [
+        "laptop"
+      ],
+      "jury_link": [
+        "External Relations"
+      ],
+      "default_view": {
+        "context": {
+          "period": "2025",
+          "product": "40",
+          "flow": "EXPORT"
+        },
+        "show_panels": [
+          "headline",
+          "kpi_exports",
+          "crossroads",
+          "trend",
+          "mix_export",
+          "specialisation"
+        ],
+        "hide_panels": [
+          "kpi_imports",
+          "kpi_balance",
+          "peers"
+        ],
+        "variant_ops": "exporter",
+        "panel_titles": {
+          "specialisation": "Where Luxembourg sells more than its EU peers",
+          "mix_export": "What Luxembourg sells"
+        }
+      },
+      "agents": {
+        "enabled": [
+          "trend_finder",
+          "cause_finder",
+          "visualizer",
+          "forecaster",
+          "general"
+        ],
+        "lead": "visualizer",
+        "max_per_question": 2,
+        "show_agent_cards": true
+      },
+      "answer": {
+        "depth": "brief",
+        "max_sentences": 4,
+        "lead_with": "chart",
+        "show_codes": true,
+        "show_sources": "on_request",
+        "show_method": false,
+        "uncertainty": "interval",
+        "quotable_sentence": false,
+        "caveats": "one_line"
+      },
+      "charts": {
+        "prefer": [
+          "choropleth",
+          "compare",
+          "scatter",
+          "bar",
+          "treemap"
+        ],
+        "avoid": [
+          "heatmap"
+        ],
+        "max_new_panels": 2,
+        "charts_first": true
+      },
+      "vocabulary": {
+        "partner": "market",
+        "RCA": "specialisation (how much more of this product Luxembourg sells than the EU average)",
+        "CN8": "product line (8-digit code)"
+      },
+      "suggested_questions": [
+        "What has happened to our exports of steel H-sections to the United States since the new tariffs?",
+        "Who buys Luxembourg's rubber products?",
+        "Which markets grew most for plastics between 2024 and 2025?",
+        "Where is Luxembourg specialised and growing?"
+      ],
+      "hide": [
+        "api_urls",
+        "method_notes"
+      ],
+      "show": [
+        "download_csv",
+        "copy_chart"
+      ],
+      "presentation": {
+        "agentLanguage": "english",
+        "agentStyle": "formal",
+        "languageComplexity": "medium",
+        "sentenceLength": "concise",
+        "useAbbreviations": true,
+        "interfaceStyle": {
+          "size": 16,
+          "contrast": "medium"
+        }
+      },
+      "prompt_snippet": "The reader exports goods from Luxembourg and looks for markets. Answer for the product group on the page (context product) unless he names another: who buys it, how much, which markets grew or are new. Show HS codes next to names, he uses them. Prefer a map or a two-year comparison by market. Four sentences at most. Never suggest a commercial decision; describe the data.",
+      "leaves_when": [
+        "he cannot find his product code",
+        "only totals, no product detail",
+        "data that looks older than last year"
+      ]
+    },
+    {
+      "id": "researcher",
+      "label": "Researcher",
+      "tagline": "Methods, comparisons and the API call behind each chart",
+      "archetype": "technical_user",
+      "literacy": "expert",
+      "devices": [
+        "laptop"
+      ],
+      "jury_link": [
+        "Data access and Data protection",
+        "Head of Innovation, Data Lab"
+      ],
+      "default_view": {
+        "context": {
+          "period": "2025",
+          "product": "TOTAL",
+          "flow": "BOTH"
+        },
+        "show_panels": [
+          "headline",
+          "kpi_imports",
+          "kpi_balance",
+          "kpi_exports",
+          "crossroads",
+          "trend",
+          "mix_export",
+          "specialisation",
+          "peers"
+        ],
+        "hide_panels": [],
+        "variant_ops": "researcher"
+      },
+      "agents": {
+        "enabled": [
+          "trend_finder",
+          "cause_finder",
+          "forecaster",
+          "visualizer",
+          "general"
+        ],
+        "lead": "trend_finder",
+        "max_per_question": 3,
+        "show_agent_cards": true
+      },
+      "answer": {
+        "depth": "full",
+        "max_sentences": 6,
+        "lead_with": "method",
+        "show_codes": true,
+        "show_sources": "inline",
+        "show_method": true,
+        "uncertainty": "backtest",
+        "quotable_sentence": false,
+        "caveats": "full"
+      },
+      "charts": {
+        "prefer": [
+          "scatter",
+          "heatmap",
+          "bump",
+          "compare",
+          "line"
+        ],
+        "avoid": [],
+        "max_new_panels": 3,
+        "charts_first": false
+      },
+      "vocabulary": {
+        "specialisation": "revealed comparative advantage (RCA)"
+      },
+      "suggested_questions": [
+        "Where is Luxembourg specialised and growing?",
+        "Is there a seasonal pattern in exports, by chapter?",
+        "Which forecasting method works best here?",
+        "How have the partners' ranks changed since 1999?"
+      ],
+      "hide": [],
+      "show": [
+        "api_urls",
+        "method_notes",
+        "provenance_panel",
+        "download_csv"
+      ],
+      "presentation": {
+        "agentLanguage": "english",
+        "agentStyle": "technical",
+        "languageComplexity": "complex",
+        "sentenceLength": "verbose",
+        "useAbbreviations": true,
+        "interfaceStyle": {
+          "size": 14,
+          "contrast": "medium"
+        }
+      },
+      "prompt_snippet": "The reader is an economics researcher who will reproduce the result. Name the method and its parameters (STL period, change-point penalty and minimum size, forecast ensemble and backtest MASE), the dataset (Eurostat ds-045409) and the endpoint each figure came from. Mention limits: BLEU before 1999, provisional 2026 months, nominal euros, EU27 peers. Up to six sentences.",
+      "leaves_when": [
+        "no API call or download behind a chart",
+        "a black-box answer with no method",
+        "figures that cannot be reproduced"
+      ]
+    },
+    {
+      "id": "citizen",
+      "label": "Curious citizen",
+      "tagline": "What Luxembourg buys and sells, in plain words",
+      "archetype": "inquiring_citizen",
+      "literacy": "general",
+      "devices": [
+        "phone",
+        "tablet"
+      ],
+      "jury_link": [
+        "Head of Communication"
+      ],
+      "default_view": {
+        "context": {
+          "period": "2025",
+          "product": "TOTAL",
+          "flow": "BOTH"
+        },
+        "show_panels": [
+          "headline",
+          "kpi_imports",
+          "kpi_balance",
+          "kpi_exports",
+          "crossroads",
+          "trend",
+          "mix_export"
+        ],
+        "hide_panels": [
+          "specialisation",
+          "peers"
+        ],
+        "variant_ops": "citizen",
+        "panel_titles": {
+          "kpi_imports": "Bought abroad",
+          "kpi_exports": "Sold abroad",
+          "kpi_balance": "Bought more than sold by",
+          "trend": "Luxembourg buys more than it sells, every year since 1999"
+        }
+      },
+      "agents": {
+        "enabled": [
+          "trend_finder",
+          "cause_finder",
+          "forecaster",
+          "visualizer",
+          "general"
+        ],
+        "lead": "visualizer",
+        "max_per_question": 1,
+        "show_agent_cards": false
+      },
+      "answer": {
+        "depth": "headline",
+        "max_sentences": 3,
+        "lead_with": "chart",
+        "show_codes": false,
+        "show_sources": "footer",
+        "show_method": false,
+        "uncertainty": "plain_range",
+        "quotable_sentence": false,
+        "caveats": "one_line"
+      },
+      "charts": {
+        "prefer": [
+          "treemap",
+          "choropleth",
+          "bar",
+          "line"
+        ],
+        "avoid": [
+          "heatmap",
+          "scatter",
+          "bump",
+          "waterfall",
+          "table"
+        ],
+        "max_new_panels": 1,
+        "charts_first": true
+      },
+      "vocabulary": {
+        "imports": "goods bought abroad",
+        "exports": "goods sold abroad",
+        "trade balance": "the gap between what Luxembourg buys and sells",
+        "HS2 chapter": "kind of goods",
+        "CN8": "product",
+        "RCA": "goods Luxembourg sells more of than other EU countries",
+        "forecast interval": "a likely range, not a promise"
+      },
+      "suggested_questions": [
+        "What does Luxembourg sell?",
+        "Who are Luxembourg's biggest customers?",
+        "Do we buy more than we sell?",
+        "What did COVID-19 do to trade?"
+      ],
+      "hide": [
+        "mark_numbers",
+        "agent_cards",
+        "api_urls",
+        "codes",
+        "method_notes",
+        "proposed_marks_counter"
+      ],
+      "show": [
+        "citation_line"
+      ],
+      "presentation": {
+        "agentLanguage": "english",
+        "agentStyle": "friendly",
+        "languageComplexity": "simple",
+        "sentenceLength": "concise",
+        "useAbbreviations": false,
+        "interfaceStyle": {
+          "size": 20,
+          "contrast": "high",
+          "lineSpacing": 1.8
+        }
+      },
+      "prompt_snippet": "The reader is a curious citizen, not a specialist, often on a phone. Use everyday words: goods bought abroad, goods sold abroad, kinds of goods; no codes, no abbreviations, no method names. One chart that answers the question, then at most three short sentences about it. Neutral and factual, no opinion on whether a figure is good or bad. If you give a forecast, say it is a likely range, not a promise.",
+      "leaves_when": [
+        "jargon (HS, CN8, RCA, Herfindahl)",
+        "too many charts at once",
+        "text too small on a phone",
+        "a hint of bias or an agenda"
+      ]
+    }
+  ]
+}

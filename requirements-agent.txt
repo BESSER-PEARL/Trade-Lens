@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT
+# The agent (app/agents/lux_insights): BAF + OpenAI, in its own virtual environment
+# (.venv-agent), because BAF pins versions the app does not use (websockets 11, numpy 1.26, ...).
+#
+#   python -m venv .venv-agent
+#   .venv-agent/Scripts/python -m pip install -r requirements-agent.txt      (Windows)
+#   .venv-agent/bin/python -m pip install -r requirements-agent.txt          (macOS, Linux)
+#
+# or scripts/setup_agent.sh / scripts/setup_agent.ps1, which do the same.
+
+# BESSER Agentic Framework: baf.core.agent, baf.library.state.reasoning_state_library,
+# baf.nlp.llm.llm_openai_api (LLMOpenAI.predict_with_tools) and baf.platforms.websocket.
+besser-agentic-framework==4.5.2
+# BAF's "llms" extra pins openai 1.93.0; installing only openai keeps transformers and torch out.
+openai==1.93.0
+
+# agents/kit (InsightsClient, ViewClient): HTTP and the local schema check of every batch.
+httpx>=0.27,<1
+jsonschema>=4.21
+referencing>=0.35

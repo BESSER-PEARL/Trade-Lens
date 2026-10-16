@@ -1,0 +1,33 @@
+From af354bd79aabc2d19744df11a39730af51b1ef36 Mon Sep 17 00:00:00 2001
+From: BESSER STATEC hackathon team <besser@list.lu>
+Date: Wed, 14 Oct 2026 13:24:51 +0200
+Subject: [PATCH 1/5] fix(packaging): ship nested generator templates in the
+ wheel
+
+package_data '* = *.j2' only matches files directly in a package folder, so
+the nested templates of the React and web-app generators (templates/src/...,
+.tsx/.ts/.css/.png) were missing from the PyPI 8.1.0 wheel and
+WebAppGenerator failed after 'pip install besser'.
+---
+ setup.cfg | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/setup.cfg b/setup.cfg
+index 1426b2e..c775bf2 100644
+--- a/setup.cfg
++++ b/setup.cfg
+@@ -19,7 +19,10 @@ install_requires = file: requirements.txt
+ packages=find:
+ 
+ [options.package_data]
+-* = *.j2
++# Templates live in non-package folders (templates/, templates/src/...), so a bare
++# "*.j2" only ships the top level: nested .j2 files and the static files the React
++# generator copies (.tsx, .ts, .css, .png) were missing from the wheel.
++* = *.j2, templates/**/*
+ # The price table must ship: without it every pip install silently falls back
+ # to the coarse built-in tiers. Keyed to the parent package with the subdir in
+ # the pattern, because ``packages=find:`` does not see ``data/`` (no
+-- 
+2.55.0.windows.4
+

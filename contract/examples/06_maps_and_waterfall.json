@@ -1,0 +1,75 @@
+{
+  "agent": {"name": "visualizer", "run_id": "visualizer-20261016-0006"},
+  "base_version": 0,
+  "message": "Where the goods go, on a map: each partner's share of exports, and the main partners, bought from and sold to. Both follow the year the page is on.",
+  "ops": [
+    {
+      "op": "upsert_panel",
+      "panel": {
+        "id": "export_map",
+        "type": "choropleth",
+        "title": "Where exports go",
+        "subtitle": "Share of Luxembourg's exports of goods, by partner",
+        "text": "In {year}, Germany took {de} of Luxembourg's exports and France {fr}.",
+        "queries": [
+          {"key": "main", "endpoint": "/insights/ranking", "params": {"by": "partner", "period": "$period", "flow": "EXPORT", "max_items": 60, "threshold": 0}, "tone": "exports"}
+        ],
+        "facts": {
+          "year": {"query": "main", "path": "period", "format": "period"},
+          "de": {"query": "main", "path": "items.[code=DE].share", "format": "pct"},
+          "fr": {"query": "main", "path": "items.[code=FR].share", "format": "pct"}
+        },
+        "options": {"measure": "share", "extent": "europe"}
+      }
+    },
+    {
+      "op": "upsert_panel",
+      "after": "export_map",
+      "panel": {
+        "id": "routes",
+        "type": "flowmap",
+        "title": "Main partners, bought from and sold to",
+        "subtitle": "Imports from and exports to the ten largest partners",
+        "queries": [
+          {"key": "main", "endpoint": "/insights/flows", "params": {"period": "$period", "previous": "$previous", "max_items": 10}}
+        ],
+        "options": {"flow": "both", "extent": "europe"}
+      }
+    },
+    {
+      "op": "add_mark",
+      "tmp_id": "neighbours",
+      "mark": {
+        "kind": "highlight",
+        "target": "export_map",
+        "thread": "neighbours",
+        "params": {"codes": ["DE", "FR", "BE"], "label": "The three neighbours"},
+        "note": "Germany, France and Belgium together take {three} of exports.",
+        "facts": {
+          "de": {"endpoint": "/insights/ranking", "params": {"by": "partner", "period": "$period", "flow": "EXPORT"}, "path": "items.[code=DE].share"},
+          "fr": {"endpoint": "/insights/ranking", "params": {"by": "partner", "period": "$period", "flow": "EXPORT"}, "path": "items.[code=FR].share"},
+          "be": {"endpoint": "/insights/ranking", "params": {"by": "partner", "period": "$period", "flow": "EXPORT"}, "path": "items.[code=BE].share"},
+          "de_fr": {"op": "sum", "of": ["de", "fr"]},
+          "three": {"op": "sum", "of": ["de_fr", "be"], "format": "pct"}
+        }
+      }
+    },
+    {
+      "op": "add_mark",
+      "tmp_id": "phones_route",
+      "mark": {
+        "kind": "thread",
+        "target": "routes",
+        "thread": "smartphones",
+        "period": "2025",
+        "params": {"in_code": "CN", "out_code": "FR", "product": "85171300", "label": "Smartphones, China to France"},
+        "note": "In 2025, {bought} of smartphones came in from China and {sold} went out to France.",
+        "facts": {
+          "bought": {"endpoint": "/insights/ranking", "params": {"by": "partner", "period": "2025", "flow": "IMPORT", "product": "85171300"}, "path": "items.[code=CN].value", "format": "eur"},
+          "sold": {"endpoint": "/insights/ranking", "params": {"by": "partner", "period": "2025", "flow": "EXPORT", "product": "85171300"}, "path": "items.[code=FR].value", "format": "eur"}
+        },
+        "provenance": {"sources": [{"url": "/insights/movers?by=product&period=2025&previous=2024&flow=EXPORT&level=4", "label": "Largest CN8 export movers, 2024 to 2025"}]}
+      }
+    }
+  ]
+}

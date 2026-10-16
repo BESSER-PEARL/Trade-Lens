@@ -1,0 +1,18 @@
+[Unit]
+Description=Luxembourg Trade Explorer: the agents (BAF + OpenAI), on ws://127.0.0.1:8766 (nginx /ws)
+After=statec-backend.service
+Requires=statec-backend.service
+
+[Service]
+User=ec2-user
+WorkingDirectory=/opt/statec
+UnsetEnvironment=PYTHONPATH
+Environment=PYTHONIOENCODING=utf-8
+Environment=LUX_AGENT_HOST=127.0.0.1
+ExecStartPre=/bin/bash -c "for i in $(seq 1 60); do curl -sf http://127.0.0.1:8000/insights/meta >/dev/null && exit 0; sleep 2; done; exit 1"
+ExecStart=/opt/statec/.venv-agent/bin/python app/agents/lux_insights/lux_insights_agent.py --api http://127.0.0.1:8000 --port 8766
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,55 @@
+{
+  "agent": {"name": "cause_finder", "run_id": "cause_finder-20261016-0006"},
+  "base_version": 1,
+  "message": "What made up the change in exports from 2024 to 2025: one chapter, electrical machinery, outweighs everything else.",
+  "ops": [
+    {
+      "op": "upsert_panel",
+      "panel": {
+        "id": "export_change",
+        "type": "waterfall",
+        "title": "What changed in exports, 2024 to 2025",
+        "subtitle": "By HS2 chapter: the eight largest moves, then everything else",
+        "text": "Exports went from {before} in 2024 to {after} in 2025.",
+        "queries": [
+          {"key": "main", "endpoint": "/insights/movers", "params": {"by": "product", "period": "2025", "previous": "2024", "flow": "EXPORT", "limit": 8}, "tone": "exports"}
+        ],
+        "facts": {
+          "before": {"query": "main", "path": "previous_total", "format": "eur"},
+          "after": {"query": "main", "path": "total", "format": "eur"}
+        },
+        "options": {"limit": 8, "show_other": true}
+      }
+    },
+    {
+      "op": "add_mark",
+      "tmp_id": "machinery",
+      "mark": {
+        "kind": "annotation",
+        "target": "export_change",
+        "thread": "export_change",
+        "period": "2025",
+        "params": {"x": "85", "label": "Electrical machinery"},
+        "note": "Electrical machinery alone added {change}, most of it smartphones re-exported to France.",
+        "facts": {
+          "change": {"endpoint": "/insights/movers", "params": {"by": "product", "period": "2025", "previous": "2024", "flow": "EXPORT"}, "path": "up.[code=85].change", "format": "eur"}
+        }
+      }
+    },
+    {
+      "op": "add_mark",
+      "tmp_id": "steel",
+      "mark": {
+        "kind": "annotation",
+        "target": "export_change",
+        "thread": "export_change",
+        "period": "2025",
+        "params": {"x": "72", "label": "Iron and steel"},
+        "note": "Iron and steel, the old mainstay, lost {change}.",
+        "facts": {
+          "change": {"endpoint": "/insights/movers", "params": {"by": "product", "period": "2025", "previous": "2024", "flow": "EXPORT"}, "path": "down.[code=72].change", "format": "eur_signed"}
+        }
+      }
+    }
+  ]
+}

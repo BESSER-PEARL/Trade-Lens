@@ -1,0 +1,414 @@
+{
+  "note": "The extra panels of each persona. When the reader picks a persona, the page sends one batch as agent 'user': set_context {persona, ...default_view.context}, the remove_panel ops of the previous persona's remove_on_leave panels, then these ops. Panels sent as 'user' are the page's own: an agent's 'clear' leaves them. Every batch is valid against the contract (tests/test_personas.py).",
+  "variants": {
+    "statec_analyst": {
+      "remove_on_leave": [
+        "p_change",
+        "p_months"
+      ],
+      "message": "The page for a STATEC analyst",
+      "ops": [
+        {
+          "op": "upsert_panel",
+          "after": "crossroads",
+          "panel": {
+            "id": "p_change",
+            "type": "waterfall",
+            "title": "What changed in exports, year on year",
+            "subtitle": "HS2 chapters, nominal euros",
+            "text": "Exports went from {before} to {after}.",
+            "queries": [
+              {
+                "key": "main",
+                "endpoint": "/insights/movers",
+                "tone": "exports",
+                "params": {
+                  "by": "product",
+                  "period": "$period",
+                  "previous": "$previous",
+                  "flow": "EXPORT",
+                  "limit": 8
+                }
+              }
+            ],
+            "facts": {
+              "before": {
+                "query": "main",
+                "path": "previous_total",
+                "format": "eur"
+              },
+              "after": {
+                "query": "main",
+                "path": "total",
+                "format": "eur"
+              }
+            },
+            "options": {
+              "limit": 8,
+              "show_other": true
+            }
+          }
+        },
+        {
+          "op": "upsert_panel",
+          "after": "trend",
+          "panel": {
+            "id": "p_months",
+            "type": "heatmap",
+            "title": "Exports month by month, since 1999",
+            "queries": [
+              {
+                "key": "main",
+                "endpoint": "/insights/series",
+                "tone": "exports",
+                "params": {
+                  "flow": "EXPORT",
+                  "freq": "M",
+                  "start": "1999-01",
+                  "end": "2026-06"
+                }
+              }
+            ],
+            "options": {
+              "kind": "month_year"
+            }
+          }
+        }
+      ]
+    },
+    "policy_adviser": {
+      "remove_on_leave": [
+        "p_export_map",
+        "p_peers_index"
+      ],
+      "message": "The page for a policy adviser",
+      "ops": [
+        {
+          "op": "upsert_panel",
+          "after": "crossroads",
+          "panel": {
+            "id": "p_export_map",
+            "type": "choropleth",
+            "title": "Where exports go",
+            "queries": [
+              {
+                "key": "main",
+                "endpoint": "/insights/ranking",
+                "tone": "exports",
+                "params": {
+                  "by": "partner",
+                  "period": "$period",
+                  "flow": "EXPORT",
+                  "max_items": 60,
+                  "threshold": 0
+                }
+              }
+            ],
+            "options": {
+              "measure": "share",
+              "extent": "europe"
+            }
+          }
+        },
+        {
+          "op": "upsert_panel",
+          "after": "trend",
+          "panel": {
+            "id": "p_peers_index",
+            "type": "compare",
+            "title": "Exports of Luxembourg, Belgium and Germany",
+            "subtitle": "Index, 2015 = 100",
+            "queries": [
+              {
+                "key": "lu",
+                "label": "Luxembourg",
+                "endpoint": "/insights/series",
+                "params": {
+                  "reporter": "LU",
+                  "flow": "EXPORT",
+                  "freq": "A",
+                  "start": "2015",
+                  "end": "$period"
+                }
+              },
+              {
+                "key": "be",
+                "label": "Belgium",
+                "endpoint": "/insights/series",
+                "params": {
+                  "reporter": "BE",
+                  "flow": "EXPORT",
+                  "freq": "A",
+                  "start": "2015",
+                  "end": "$period"
+                }
+              },
+              {
+                "key": "de",
+                "label": "Germany",
+                "endpoint": "/insights/series",
+                "params": {
+                  "reporter": "DE",
+                  "flow": "EXPORT",
+                  "freq": "A",
+                  "start": "2015",
+                  "end": "$period"
+                }
+              }
+            ],
+            "options": {
+              "compare": "index",
+              "base_period": "2015",
+              "focus": "lu"
+            }
+          }
+        }
+      ]
+    },
+    "journalist": {
+      "remove_on_leave": [
+        "p_routes"
+      ],
+      "message": "The page for a journalist",
+      "ops": [
+        {
+          "op": "upsert_panel",
+          "after": "crossroads",
+          "panel": {
+            "id": "p_routes",
+            "type": "flowmap",
+            "title": "Main partners, bought from and sold to",
+            "queries": [
+              {
+                "key": "main",
+                "endpoint": "/insights/flows",
+                "params": {
+                  "period": "$period",
+                  "previous": "$previous",
+                  "max_items": 10
+                }
+              }
+            ],
+            "options": {
+              "flow": "both",
+              "extent": "europe"
+            }
+          }
+        }
+      ]
+    },
+    "exporter": {
+      "remove_on_leave": [
+        "p_markets_map",
+        "p_markets_years"
+      ],
+      "message": "The page for a business owner",
+      "ops": [
+        {
+          "op": "upsert_panel",
+          "after": "crossroads",
+          "panel": {
+            "id": "p_markets_map",
+            "type": "choropleth",
+            "title": "Who buys this product group",
+            "queries": [
+              {
+                "key": "main",
+                "endpoint": "/insights/ranking",
+                "tone": "exports",
+                "params": {
+                  "by": "partner",
+                  "period": "$period",
+                  "flow": "EXPORT",
+                  "product": "$product",
+                  "max_items": 60,
+                  "threshold": 0
+                }
+              }
+            ],
+            "options": {
+              "measure": "share",
+              "extent": "world"
+            }
+          }
+        },
+        {
+          "op": "upsert_panel",
+          "after": "p_markets_map",
+          "panel": {
+            "id": "p_markets_years",
+            "type": "compare",
+            "title": "Markets for this product group, this year against last year",
+            "queries": [
+              {
+                "key": "a",
+                "label": "Previous year",
+                "endpoint": "/insights/ranking",
+                "params": {
+                  "by": "partner",
+                  "period": "$previous",
+                  "flow": "EXPORT",
+                  "product": "$product",
+                  "max_items": 24,
+                  "threshold": 0
+                }
+              },
+              {
+                "key": "b",
+                "label": "This year",
+                "endpoint": "/insights/ranking",
+                "params": {
+                  "by": "partner",
+                  "period": "$period",
+                  "flow": "EXPORT",
+                  "product": "$product",
+                  "max_items": 24,
+                  "threshold": 0
+                }
+              }
+            ],
+            "options": {
+              "compare": "absolute",
+              "sort": "delta",
+              "limit": 8
+            }
+          }
+        }
+      ]
+    },
+    "researcher": {
+      "remove_on_leave": [
+        "p_strengths",
+        "p_seasons"
+      ],
+      "message": "The page for a researcher",
+      "ops": [
+        {
+          "op": "upsert_panel",
+          "after": "trend",
+          "panel": {
+            "id": "p_strengths",
+            "type": "scatter",
+            "title": "Specialised and growing",
+            "subtitle": "RCA against the EU peers, against growth on the year before",
+            "queries": [
+              {
+                "key": "main",
+                "endpoint": "/insights/specialisation",
+                "tone": "exports",
+                "params": {
+                  "by": "product",
+                  "period": "$period",
+                  "flow": "EXPORT"
+                }
+              },
+              {
+                "key": "growth",
+                "endpoint": "/insights/movers",
+                "params": {
+                  "by": "product",
+                  "period": "$period",
+                  "previous": "$previous",
+                  "flow": "EXPORT",
+                  "threshold": 0,
+                  "limit": 100
+                }
+              }
+            ],
+            "options": {
+              "x": "rca",
+              "y": "growth",
+              "size": "value",
+              "reference_x": 1,
+              "reference_y": 0,
+              "log_x": true
+            }
+          }
+        },
+        {
+          "op": "upsert_panel",
+          "after": "p_strengths",
+          "panel": {
+            "id": "p_seasons",
+            "type": "heatmap",
+            "title": "The typical year of the main chapters",
+            "queries": [
+              {
+                "key": "main",
+                "endpoint": "/trends/seasonal-heatmap",
+                "tone": "exports",
+                "params": {
+                  "flow": "EXPORT",
+                  "freq": "M",
+                  "top": 12
+                }
+              }
+            ],
+            "options": {
+              "kind": "seasonal"
+            }
+          }
+        }
+      ]
+    },
+    "citizen": {
+      "remove_on_leave": [
+        "p_goods",
+        "p_customers"
+      ],
+      "message": "The page for a curious citizen",
+      "ops": [
+        {
+          "op": "upsert_panel",
+          "after": "crossroads",
+          "panel": {
+            "id": "p_goods",
+            "type": "treemap",
+            "title": "What Luxembourg sells abroad",
+            "queries": [
+              {
+                "key": "main",
+                "endpoint": "/insights/tree",
+                "tone": "exports",
+                "params": {
+                  "by": "product",
+                  "period": "$period",
+                  "flow": "EXPORT",
+                  "depth": 1,
+                  "threshold": "auto"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "op": "upsert_panel",
+          "after": "p_goods",
+          "panel": {
+            "id": "p_customers",
+            "type": "choropleth",
+            "title": "Who buys Luxembourg's goods",
+            "queries": [
+              {
+                "key": "main",
+                "endpoint": "/insights/ranking",
+                "tone": "exports",
+                "params": {
+                  "by": "partner",
+                  "period": "$period",
+                  "flow": "EXPORT",
+                  "max_items": 60,
+                  "threshold": 0
+                }
+              }
+            ],
+            "options": {
+              "measure": "share",
+              "extent": "europe"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

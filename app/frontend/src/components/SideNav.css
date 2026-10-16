@@ -1,0 +1,147 @@
+/* The pages, out of sight: a rail that slides in from the left edge when the pointer reaches it
+   (or the keyboard tabs into it) and over the page, never pushing it. On touch screens: a small
+   translucent pill in the bottom-left corner. */
+.side-nav {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 30;
+  width: 84px;
+  box-sizing: border-box;
+  padding: 18px 0 18px 12px;
+  font-family: var(--font-ui);
+  /* Only a 12 px strip at the edge is left on screen, fully transparent: the hover zone. */
+  transform: translateX(-72px);
+  opacity: 0;
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+
+.side-nav:hover,
+.side-nav:focus-within {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.side-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 72px;
+  background: var(--surface, #FFFFFF);
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px var(--rule, #DCE2E8), 0 12px 32px rgba(20, 32, 46, 0.12);
+}
+
+.side-nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 60px;
+  padding: 10px 0 8px;
+  border-radius: 10px;
+  color: var(--muted, #5E6B7A);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.side-nav-link svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.side-nav-link:hover {
+  color: var(--ink, #14202E);
+  background: var(--paper, #F5F7F9);
+}
+
+.side-nav-link.is-active {
+  color: var(--ink, #14202E);
+  background: color-mix(in srgb, var(--sky, #0E8FD0) 10%, #FFFFFF);
+}
+
+.side-nav-link:focus-visible {
+  outline: 2px solid var(--sky, #0E8FD0);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-nav,
+  .side-nav-link {
+    transition: none;
+  }
+}
+
+/* Touch screens (no hover): a small pill of icons in the corner, faint until touched. */
+@media (hover: none), (max-width: 700px) {
+  .side-nav {
+    top: auto;
+    bottom: 14px;
+    left: 14px;
+    width: auto;
+    padding: 0;
+    transform: none;
+    opacity: 0.5;
+  }
+
+  .side-nav:hover,
+  .side-nav:focus-within,
+  .side-nav:active {
+    opacity: 1;
+  }
+
+  .side-nav ul {
+    flex-direction: row;
+    width: auto;
+    padding: 4px;
+    gap: 2px;
+    border-radius: 999px;
+  }
+
+  .side-nav-link {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 999px;
+  }
+
+  /* Scrolling down, the pill steps out of the way; it is back on the way up and at the end of the page. */
+  .side-nav {
+    transition: transform 200ms ease, opacity 200ms ease;
+  }
+
+  .side-nav.is-tucked:not(:focus-within) {
+    transform: translateY(calc(100% + 24px));
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Room at the end of the page, so the pill never sits on the last lines. */
+  body:has(.side-nav) {
+    padding-bottom: 72px;
+  }
+
+  /* The icon says it; the name stays for screen readers. */
+  .side-nav-link span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+}

@@ -1,0 +1,174 @@
+/* Printed-only elements are invisible on screen. */
+.cx-print-only {
+  display: none;
+}
+
+.cx-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  .cx-print-only {
+    display: block;
+  }
+
+  /* The app around the page: navigation, the reader screen, the Ask panel, every control. */
+  .side-nav,
+  .ask,
+  .pg,
+  .cx-controls,
+  .cx-ctxmenu,
+  .cx-linkbtn,
+  .cx-loading,
+  .cx-empty,
+  .wl-start,
+  .wl-kicker,
+  .cx-group-foot,
+  .cx-more-about,
+  .cx-made-close,
+  .cx-made-detail a,
+  .cx-main button {
+    display: none !important;
+  }
+
+  .app-container,
+  .app-main,
+  .cx-page {
+    background: #fff !important;
+  }
+
+  /* "Show as table" and other folded extras are for the screen; the statisticians' fold of the card is open. */
+  .cx-main details:not(.cx-made-detail) {
+    display: none !important;
+  }
+
+  /* One chart per row at the full width, so a chart and its card read at paper size. */
+  .cx-group .cx-agent-row > div {
+    display: block !important;
+  }
+
+  .cx-group .cx-agent-panel {
+    margin-bottom: 18px;
+  }
+
+  .app-container.has-side-nav {
+    padding: 0 !important;
+  }
+
+  .cx-page {
+    padding: 0 !important;
+  }
+
+  .cx-wrap {
+    display: block !important;
+    max-width: none !important;
+  }
+
+  .cx-main {
+    display: block !important;
+    zoom: 1 !important;
+  }
+
+  .cx-main > * + * {
+    margin-top: 22px;
+  }
+
+  /* A card, a note and an explanation stay whole; a chart and its card may fall on two pages. */
+  .cx-made,
+  .cx-note,
+  .cx-print-reply {
+    break-inside: avoid;
+  }
+
+  /* The question stays with the first chart it drew. */
+  .cx-group-head {
+    break-after: avoid;
+  }
+
+  .cx-made {
+    margin-top: 10px;
+    font-size: 11.5px;
+  }
+
+  .cx-made-detail-body {
+    font-size: 10.5px;
+  }
+
+  .cx-made-query code {
+    word-break: break-all;
+  }
+
+  .cx-group {
+    break-before: auto;
+  }
+
+  .cx-print-head {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #14202e;
+  }
+
+  .cx-print-brand {
+    margin: 0 0 2px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #0a6fa3;
+  }
+
+  .cx-print-meta {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: #3b4858;
+  }
+
+  .cx-print-note {
+    margin: 0;
+    max-width: 46em;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #14202e;
+  }
+
+  .cx-print-words {
+    max-width: 46em;
+    font-family: var(--font-agent, Georgia, serif);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .cx-print-reply p {
+    margin: 0 0 6px;
+  }
+
+  .cx-print-source {
+    margin-top: 26px;
+    padding-top: 10px;
+    border-top: 1px solid #c5ced8;
+    font-size: 10.5px;
+    line-height: 1.4;
+    color: #3b4858;
+  }
+
+  .cx-print-source p {
+    margin: 0 0 4px;
+  }
+}

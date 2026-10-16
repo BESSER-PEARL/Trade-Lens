@@ -1,0 +1,444 @@
+{
+  "agent": {
+    "name": "visualizer",
+    "run_id": "visualizer-20261016-0009"
+  },
+  "base_version": 1,
+  "message": "Four comparisons: Luxembourg against its EU peers, partners in 2024 and 2025, exports against imports, and 2025 month by month against 2024.",
+  "ops": [
+    {
+      "op": "upsert_panel",
+      "panel": {
+        "id": "peers_exports",
+        "type": "compare",
+        "title": "Exports of Luxembourg, Germany, Belgium, Netherlands and France, since 2015",
+        "subtitle": "Index, 2015 = 100",
+        "text": "Exports since 2015: Luxembourg {lu_change}, Germany {de_change}, Belgium {be_change}.",
+        "facts": {
+          "lu_now": {
+            "query": "lu",
+            "path": "-1.value",
+            "format": "eur"
+          },
+          "lu_then": {
+            "query": "lu",
+            "path": "[period=2015].value",
+            "format": "eur"
+          },
+          "lu_change": {
+            "op": "growth",
+            "of": [
+              "lu_now",
+              "lu_then"
+            ],
+            "format": "pct_signed"
+          },
+          "de_now": {
+            "query": "de",
+            "path": "-1.value",
+            "format": "eur"
+          },
+          "de_then": {
+            "query": "de",
+            "path": "[period=2015].value",
+            "format": "eur"
+          },
+          "de_change": {
+            "op": "growth",
+            "of": [
+              "de_now",
+              "de_then"
+            ],
+            "format": "pct_signed"
+          },
+          "be_now": {
+            "query": "be",
+            "path": "-1.value",
+            "format": "eur"
+          },
+          "be_then": {
+            "query": "be",
+            "path": "[period=2015].value",
+            "format": "eur"
+          },
+          "be_change": {
+            "op": "growth",
+            "of": [
+              "be_now",
+              "be_then"
+            ],
+            "format": "pct_signed"
+          },
+          "nl_now": {
+            "query": "nl",
+            "path": "-1.value",
+            "format": "eur"
+          },
+          "nl_then": {
+            "query": "nl",
+            "path": "[period=2015].value",
+            "format": "eur"
+          },
+          "nl_change": {
+            "op": "growth",
+            "of": [
+              "nl_now",
+              "nl_then"
+            ],
+            "format": "pct_signed"
+          },
+          "fr_now": {
+            "query": "fr",
+            "path": "-1.value",
+            "format": "eur"
+          },
+          "fr_then": {
+            "query": "fr",
+            "path": "[period=2015].value",
+            "format": "eur"
+          },
+          "fr_change": {
+            "op": "growth",
+            "of": [
+              "fr_now",
+              "fr_then"
+            ],
+            "format": "pct_signed"
+          }
+        },
+        "queries": [
+          {
+            "key": "lu",
+            "endpoint": "/insights/series",
+            "params": {
+              "flow": "EXPORT",
+              "freq": "A",
+              "start": "2015",
+              "end": "$period",
+              "reporter": "LU"
+            },
+            "label": "Luxembourg"
+          },
+          {
+            "key": "de",
+            "endpoint": "/insights/series",
+            "params": {
+              "flow": "EXPORT",
+              "freq": "A",
+              "start": "2015",
+              "end": "$period",
+              "reporter": "DE"
+            },
+            "label": "Germany"
+          },
+          {
+            "key": "be",
+            "endpoint": "/insights/series",
+            "params": {
+              "flow": "EXPORT",
+              "freq": "A",
+              "start": "2015",
+              "end": "$period",
+              "reporter": "BE"
+            },
+            "label": "Belgium"
+          },
+          {
+            "key": "nl",
+            "endpoint": "/insights/series",
+            "params": {
+              "flow": "EXPORT",
+              "freq": "A",
+              "start": "2015",
+              "end": "$period",
+              "reporter": "NL"
+            },
+            "label": "Netherlands"
+          },
+          {
+            "key": "fr",
+            "endpoint": "/insights/series",
+            "params": {
+              "flow": "EXPORT",
+              "freq": "A",
+              "start": "2015",
+              "end": "$period",
+              "reporter": "FR"
+            },
+            "label": "France"
+          }
+        ],
+        "options": {
+          "compare": "index",
+          "base_period": "2015",
+          "focus": "lu"
+        }
+      }
+    },
+    {
+      "op": "add_mark",
+      "mark": {
+        "kind": "highlight",
+        "target": "peers_exports",
+        "thread": "peers",
+        "params": {
+          "from": "2020",
+          "to": "2021"
+        },
+        "note": "The pandemic dip, in every country at once."
+      }
+    },
+    {
+      "op": "upsert_panel",
+      "panel": {
+        "id": "partners_2025",
+        "type": "compare",
+        "title": "Exports by partner, 2024 and 2025",
+        "subtitle": "2024 and 2025, € nominal",
+        "facts": {
+          "a_total": {
+            "query": "a",
+            "path": "total",
+            "format": "eur"
+          },
+          "b_total": {
+            "query": "b",
+            "path": "total",
+            "format": "eur"
+          },
+          "change": {
+            "op": "growth",
+            "of": [
+              "b_total",
+              "a_total"
+            ],
+            "format": "pct_signed"
+          }
+        },
+        "queries": [
+          {
+            "key": "a",
+            "endpoint": "/insights/ranking",
+            "params": {
+              "by": "partner",
+              "flow": "EXPORT",
+              "max_items": 24,
+              "threshold": 0,
+              "period": "2024"
+            },
+            "label": "2024",
+            "tone": "exports"
+          },
+          {
+            "key": "b",
+            "endpoint": "/insights/ranking",
+            "params": {
+              "by": "partner",
+              "flow": "EXPORT",
+              "max_items": 24,
+              "threshold": 0,
+              "period": "2025"
+            },
+            "label": "2025",
+            "tone": "exports"
+          }
+        ],
+        "options": {
+          "compare": "absolute",
+          "sort": "b",
+          "limit": 8
+        }
+      }
+    },
+    {
+      "op": "add_mark",
+      "mark": {
+        "kind": "annotation",
+        "target": "partners_2025",
+        "thread": "partners",
+        "params": {
+          "x": "FR",
+          "label": "France"
+        },
+        "note": "France bought {extra} more than in 2024, the largest rise of any partner.",
+        "facts": {
+          "extra": {
+            "endpoint": "/insights/movers",
+            "params": {
+              "by": "partner",
+              "period": "2025",
+              "previous": "2024",
+              "flow": "EXPORT"
+            },
+            "path": "up.[code=FR].change",
+            "format": "eur"
+          }
+        },
+        "period": "2025"
+      }
+    },
+    {
+      "op": "upsert_panel",
+      "panel": {
+        "id": "balance_since_2015",
+        "type": "compare",
+        "title": "Exports and imports, since 2015",
+        "subtitle": "€, nominal; the shade is the balance",
+        "text": "Luxembourg bought {imports_now} and sold {exports_now}: a balance of {balance}.",
+        "facts": {
+          "exports_now": {
+            "query": "exports",
+            "path": "-1.value",
+            "format": "eur"
+          },
+          "exports_then": {
+            "query": "exports",
+            "path": "0.value",
+            "format": "eur"
+          },
+          "exports_change": {
+            "op": "growth",
+            "of": [
+              "exports_now",
+              "exports_then"
+            ],
+            "format": "pct_signed"
+          },
+          "imports_now": {
+            "query": "imports",
+            "path": "-1.value",
+            "format": "eur"
+          },
+          "imports_then": {
+            "query": "imports",
+            "path": "0.value",
+            "format": "eur"
+          },
+          "imports_change": {
+            "op": "growth",
+            "of": [
+              "imports_now",
+              "imports_then"
+            ],
+            "format": "pct_signed"
+          },
+          "balance": {
+            "op": "diff",
+            "of": [
+              "exports_now",
+              "imports_now"
+            ],
+            "format": "eur_signed"
+          }
+        },
+        "queries": [
+          {
+            "key": "exports",
+            "endpoint": "/insights/series",
+            "params": {
+              "flow": "EXPORT",
+              "freq": "A",
+              "start": "2015",
+              "end": "$period"
+            },
+            "label": "Exports",
+            "tone": "exports"
+          },
+          {
+            "key": "imports",
+            "endpoint": "/insights/series",
+            "params": {
+              "flow": "IMPORT",
+              "freq": "A",
+              "start": "2015",
+              "end": "$period"
+            },
+            "label": "Imports",
+            "tone": "imports"
+          }
+        ],
+        "options": {
+          "compare": "absolute",
+          "focus": "exports",
+          "balance": true
+        }
+      }
+    },
+    {
+      "op": "upsert_panel",
+      "panel": {
+        "id": "months_2025",
+        "type": "compare",
+        "title": "Exports, 2025 against 2024, month by month",
+        "subtitle": "€, nominal",
+        "facts": {
+          "y2024_now": {
+            "query": "y2024",
+            "path": "-1.value",
+            "format": "eur"
+          },
+          "y2024_then": {
+            "query": "y2024",
+            "path": "0.value",
+            "format": "eur"
+          },
+          "y2024_change": {
+            "op": "growth",
+            "of": [
+              "y2024_now",
+              "y2024_then"
+            ],
+            "format": "pct_signed"
+          },
+          "y2025_now": {
+            "query": "y2025",
+            "path": "-1.value",
+            "format": "eur"
+          },
+          "y2025_then": {
+            "query": "y2025",
+            "path": "0.value",
+            "format": "eur"
+          },
+          "y2025_change": {
+            "op": "growth",
+            "of": [
+              "y2025_now",
+              "y2025_then"
+            ],
+            "format": "pct_signed"
+          }
+        },
+        "queries": [
+          {
+            "key": "y2024",
+            "endpoint": "/insights/series",
+            "params": {
+              "flow": "EXPORT",
+              "freq": "M",
+              "start": "2024-01",
+              "end": "2024-12"
+            },
+            "label": "2024"
+          },
+          {
+            "key": "y2025",
+            "endpoint": "/insights/series",
+            "params": {
+              "flow": "EXPORT",
+              "freq": "M",
+              "start": "2025-01",
+              "end": "2025-12"
+            },
+            "label": "2025"
+          }
+        ],
+        "options": {
+          "compare": "absolute",
+          "focus": "y2025",
+          "align": "month"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "agent": {"name": "trend_finder", "run_id": "trend_finder-20261016-0007"},
+  "base_version": 0,
+  "message": "Every month of exports since 1999 on one grid, and the three times the level shifted for good, found by change-point analysis (PELT).",
+  "ops": [
+    {
+      "op": "upsert_panel",
+      "panel": {
+        "id": "export_months",
+        "type": "heatmap",
+        "title": "Exports month by month, since 1999",
+        "subtitle": "One row per year, one column per month; darker is more",
+        "text": "Over the whole span the trend is {direction} and {shape}. {seasonality}",
+        "queries": [
+          {"key": "main", "endpoint": "/insights/series", "params": {"flow": "EXPORT", "freq": "M", "start": "1999-01", "end": "2026-06"}, "tone": "exports"},
+          {"key": "analysis", "endpoint": "/trends/analyze", "params": {"flow": "EXPORT", "freq": "M", "start": "1999-01", "end": "2026-06", "penalty": 1.5, "min_size": 12}}
+        ],
+        "facts": {
+          "direction": {"query": "analysis", "path": "direction", "format": "text"},
+          "shape": {"query": "analysis", "path": "shape", "format": "text"},
+          "seasonality": {"query": "analysis", "path": "seasonality_summary", "format": "text"}
+        },
+        "options": {"kind": "month_year"}
+      }
+    },
+    {
+      "op": "add_mark",
+      "tmp_id": "break_2005",
+      "mark": {
+        "kind": "trend_break",
+        "target": "export_months",
+        "thread": "breaks",
+        "params": {"at": "2005-09", "label": "Step up, 2005", "before": "before", "after": "after"},
+        "query": {"endpoint": "/trends/analyze", "params": {"flow": "EXPORT", "freq": "M", "start": "1999-01", "end": "2026-06", "penalty": 1.5, "min_size": 12}},
+        "note": "From September 2005, a typical month of exports went from {before} to {after}.",
+        "facts": {
+          "before": {"query": "self", "path": "changepoints.[period=2005-09].before_mean", "format": "eur"},
+          "after": {"query": "self", "path": "changepoints.[period=2005-09].after_mean", "format": "eur"}
+        }
+      }
+    },
+    {
+      "op": "add_mark",
+      "tmp_id": "break_2009",
+      "mark": {
+        "kind": "trend_break",
+        "target": "export_months",
+        "thread": "breaks",
+        "params": {"at": "2009-01", "label": "Financial crisis", "before": "before", "after": "after"},
+        "query": {"endpoint": "/trends/analyze", "params": {"flow": "EXPORT", "freq": "M", "start": "1999-01", "end": "2026-06", "penalty": 1.5, "min_size": 12}},
+        "note": "The financial crisis: from January 2009 a typical month fell from {before} to {after}.",
+        "facts": {
+          "before": {"query": "self", "path": "changepoints.[period=2009-01].before_mean", "format": "eur"},
+          "after": {"query": "self", "path": "changepoints.[period=2009-01].after_mean", "format": "eur"}
+        }
+      }
+    },
+    {
+      "op": "add_mark",
+      "tmp_id": "break_2021",
+      "mark": {
+        "kind": "trend_break",
+        "target": "export_months",
+        "thread": "breaks",
+        "params": {"at": "2021-12", "label": "Step up, end of 2021", "before": "before", "after": "after"},
+        "query": {"endpoint": "/trends/analyze", "params": {"flow": "EXPORT", "freq": "M", "start": "1999-01", "end": "2026-06", "penalty": 1.5, "min_size": 12}},
+        "note": "After the pandemic, from December 2021, a typical month rose from {before} to {after}.",
+        "facts": {
+          "before": {"query": "self", "path": "changepoints.[period=2021-12].before_mean", "format": "eur"},
+          "after": {"query": "self", "path": "changepoints.[period=2021-12].after_mean", "format": "eur"}
+        }
+      }
+    }
+  ]
+}

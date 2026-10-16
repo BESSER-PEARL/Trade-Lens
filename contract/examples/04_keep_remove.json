@@ -1,0 +1,11 @@
+{
+  "agent": {"name": "user", "run_id": "user-20261016-0001"},
+  "base_version": 3,
+  "message": "Keep the smartphone thread and the forecast; take the COVID-19 rule off the page.",
+  "ops": [
+    {"op": "keep_mark", "id": "m1"},
+    {"op": "keep_mark", "id": "m7"},
+    {"op": "remove_mark", "id": "m4"},
+    {"op": "pin_panel", "id": "phones_drill", "pinned": true}
+  ]
+}

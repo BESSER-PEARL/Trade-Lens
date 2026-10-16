@@ -1,0 +1,137 @@
+From: BESSER STATEC hackathon team <besser@list.lu>
+Subject: [PATCH 6/6] fix(react): readable chart axes, labels and values
+
+Large numbers on value axes and in tooltips were printed in full
+(25000000000), and horizontal bar charts gave category labels the default
+60 px, so longer names wrapped and overlapped. Value axes now use compact
+numbers (25B), tooltips thousands separators, horizontal bars a 190 px
+label column with long names shortened and a height that grows with the
+number of bars, and MetricCard gets a "compact" format.
+---
+
+diff --git a/besser/BUML/metamodel/gui/dashboard.py b/besser/BUML/metamodel/gui/dashboard.py
+index 4b00cf3..93a6082 100644
+--- a/besser/BUML/metamodel/gui/dashboard.py
++++ b/besser/BUML/metamodel/gui/dashboard.py
+@@ -1112,7 +1112,7 @@ class MetricCard(ViewComponent):
+     Args:
+         name (str): The name of the metric card.
+         metric_title (str): The title displayed on the metric card.
+-        format (str): The format for displaying the value ('number', 'currency', 'percentage', 'time').
++        format (str): The format for displaying the value ('number', 'compact', 'currency', 'percentage', 'time').
+         value_color (str): The color of the value text.
+         value_size (int): The font size of the value text.
+         show_trend (bool): Whether to show the trend indicator.
+diff --git a/besser/generators/react/templates/src/components/charts/BarChartComponent.tsx.j2 b/besser/generators/react/templates/src/components/charts/BarChartComponent.tsx.j2
+index 31787df..c141adb 100644
+--- a/besser/generators/react/templates/src/components/charts/BarChartComponent.tsx.j2
++++ b/besser/generators/react/templates/src/components/charts/BarChartComponent.tsx.j2
+@@ -56,6 +56,16 @@ const resolveColor = (
+   (styles && (styles as any)["--chart-bar-color"]) ||
+   "#7f56d9";
+ 
++// Readable axes: large numbers in compact form (25B, 1.5M), long category labels shortened.
++const compactNumber = (value: unknown): string =>
++  typeof value === "number" && Math.abs(value) >= 10000
++    ? new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(value)
++    : String(value ?? "");
++const shortLabel = (value: unknown, max = 26): string => {
++  const text = String(value ?? "");
++  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
++};
++
+ export const BarChartComponent: React.FC<Props> = ({
+   id,
+   title,
+@@ -97,7 +107,8 @@ export const BarChartComponent: React.FC<Props> = ({
+ 
+   const containerStyle: CSSProperties = {
+     width: "100%",
+-    height: "400px",
++    // Grows with the chart: horizontal bar charts get taller with more categories.
++    minHeight: "400px",
+     marginBottom: "20px",
+     ...styles,
+   };
+@@ -150,7 +161,10 @@ export const BarChartComponent: React.FC<Props> = ({
+   return (
+     <div id={id} className={className} style={containerStyle}>
+       {title && <h3 style={{ textAlign: "center", marginBottom: "10px" }}>{title}</h3>}
+-      <ResponsiveContainer width="100%" height={360}>
++      <ResponsiveContainer
++        width="100%"
++        height={orientation === "horizontal" ? Math.max(360, (chartData?.length ?? 0) * 28 + 60) : 360}
++      >
+         <BarChart
+           data={chartData}
+           margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+@@ -164,12 +178,17 @@ export const BarChartComponent: React.FC<Props> = ({
+           <XAxis
+             type={orientation === "horizontal" ? "number" : "category"}
+             dataKey={orientation === "horizontal" ? actualDataField : actualLabelField}
++            tickFormatter={orientation === "horizontal" ? compactNumber : (v: unknown) => shortLabel(v, 14)}
+           />
+           <YAxis
+             type={orientation === "horizontal" ? "category" : "number"}
+             dataKey={orientation === "horizontal" ? actualLabelField : undefined}
++            width={orientation === "horizontal" ? 190 : 64}
++            interval={0}
++            tick={{ fontSize: 12 }}
++            tickFormatter={orientation === "horizontal" ? (v: unknown) => shortLabel(v, 24) : compactNumber}
+           />
+-          {showTooltip && <Tooltip />}
++          {showTooltip && <Tooltip formatter={(v: unknown) => (typeof v === "number" ? v.toLocaleString("en-US", { maximumFractionDigits: 2 }) : String(v ?? ""))} />}
+           {showLegend && <Legend verticalAlign={legendPosition} content={renderLegend} />}
+           {series && series.length > 0 ? (
+             series.map((s, index) => (
+diff --git a/besser/generators/react/templates/src/components/charts/LineChartComponent.tsx.j2 b/besser/generators/react/templates/src/components/charts/LineChartComponent.tsx.j2
+index 661d1fe..1116864 100644
+--- a/besser/generators/react/templates/src/components/charts/LineChartComponent.tsx.j2
++++ b/besser/generators/react/templates/src/components/charts/LineChartComponent.tsx.j2
+@@ -66,6 +66,13 @@ const getNestedValue = (obj: any, path: string): any => {
+   return value;
+ };
+ 
++
++// Readable axes: large numbers in compact form (25B, 1.5M), long category labels shortened.
++const compactNumber = (value: unknown): string =>
++  typeof value === "number" && Math.abs(value) >= 10000
++    ? new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(value)
++    : String(value ?? "");
++
+ export const LineChartComponent: React.FC<Props> = ({
+   id,
+   title,
+@@ -228,8 +235,8 @@ export const LineChartComponent: React.FC<Props> = ({
+         <LineChart data={mergedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+           {showGrid && <CartesianGrid strokeDasharray="3 3" stroke={options?.gridColor} />}
+           <XAxis dataKey="name" />
+-          <YAxis />
+-          {showTooltip && <Tooltip />}
++          <YAxis tickFormatter={compactNumber} width={64} />
++          {showTooltip && <Tooltip formatter={(v: unknown) => (typeof v === "number" ? v.toLocaleString("en-US", { maximumFractionDigits: 2 }) : String(v ?? ""))} />}
+           {showLegend && <Legend verticalAlign={legendPosition} content={renderLegend} />}
+           {series.map((s, index) => (
+             <Line
+diff --git a/besser/generators/react/templates/src/components/charts/MetricCardComponent.tsx.j2 b/besser/generators/react/templates/src/components/charts/MetricCardComponent.tsx.j2
+index 9ad73f1..62ebca6 100644
+--- a/besser/generators/react/templates/src/components/charts/MetricCardComponent.tsx.j2
++++ b/besser/generators/react/templates/src/components/charts/MetricCardComponent.tsx.j2
+@@ -8,7 +8,7 @@ interface Props {
+   "show-trend"?: boolean;
+   "positive-color"?: string;
+   "negative-color"?: string;
+-  format?: "number" | "currency" | "percentage" | "time";
++  format?: "number" | "compact" | "currency" | "percentage" | "time";
+   value?: number;
+   trend?: number;
+   data_binding?: {
+@@ -31,6 +31,8 @@ const formatValue = (value: number, format: string): string => {
+       })}`;
+     case "percentage":
+       return `${value.toFixed(2)}%`;
++    case "compact":
++      return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 2 }).format(value);
+     case "time":
+       const hours = Math.floor(value / 60);
+       const minutes = value % 60;

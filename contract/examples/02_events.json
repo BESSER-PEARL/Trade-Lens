@@ -1,0 +1,52 @@
+{
+  "agent": {"name": "cause_finder", "run_id": "cause_finder-20261016-0001"},
+  "base_version": 1,
+  "message": "Four events line up with breaks in the series since 2015. These are dates that match, not proof of cause.",
+  "ops": [
+    {
+      "op": "add_mark",
+      "mark": {
+        "kind": "event",
+        "target": "trend",
+        "thread": "events",
+        "params": {"at": "2018-06", "label": "US steel tariffs", "event_id": "us-steel-tariffs-2018"},
+        "note": "The US put tariffs on EU steel and aluminium in June 2018; iron and steel is one of Luxembourg's main export chapters.",
+        "query": {"endpoint": "/insights/events", "params": {"start": "2015"}},
+        "provenance": {"sources": [{"url": "/insights/events?start=2015", "label": "Curated events (events.csv)"}]}
+      }
+    },
+    {
+      "op": "add_mark",
+      "mark": {
+        "kind": "event",
+        "target": "trend",
+        "thread": "events",
+        "params": {"at": "2020-03", "until": "2020-05", "label": "COVID-19", "event_id": "covid-19-2020"},
+        "note": "Lockdowns across Europe from March 2020; both imports and exports fell that year.",
+        "query": {"endpoint": "/insights/events", "params": {"start": "2015"}}
+      }
+    },
+    {
+      "op": "add_mark",
+      "mark": {
+        "kind": "event",
+        "target": "trend",
+        "thread": "events",
+        "params": {"at": "2021-01", "label": "EU-UK trade agreement", "event_id": "eu-uk-tca-2021"},
+        "note": "The EU-UK Trade and Cooperation Agreement applied from January 2021, after the Brexit transition.",
+        "query": {"endpoint": "/insights/events", "params": {"start": "2015"}}
+      }
+    },
+    {
+      "op": "add_mark",
+      "mark": {
+        "kind": "event",
+        "target": "trend",
+        "thread": "events",
+        "params": {"at": "2022-02", "label": "Sanctions on Russia", "event_id": "russia-sanctions-2022"},
+        "note": "EU sanctions on Russia from February 2022, with energy prices pushing import values up.",
+        "query": {"endpoint": "/insights/events", "params": {"start": "2015"}}
+      }
+    }
+  ]
+}

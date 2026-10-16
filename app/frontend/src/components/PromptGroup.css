@@ -1,0 +1,104 @@
+.cx-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+/* One question and everything it drew. */
+.cx-group {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 22px;
+  border-top: 2px solid var(--ink, #14202E);
+  scroll-margin-top: 24px;
+}
+
+.cx-group.is-new {
+  animation: cx-new 2.4s ease-out;
+}
+
+.cx-group-head .cx-asked {
+  /* The reader's question as the chat shows it (a dark bubble), so it never reads as a chart title. */
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: min(100%, 44em);
+  padding: 10px 16px 11px;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #fff;
+  background: var(--ink, #14202E);
+  border-radius: 14px 14px 14px 4px;
+}
+
+.cx-group-head .cx-asked-label {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.cx-group-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.cx-note {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 44em;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--sky, #0E8FD0) 5%, var(--surface, #fff));
+  border-left: 3px solid var(--sky, #0E8FD0);
+  border-radius: 0 8px 8px 0;
+}
+
+.cx-note-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sky-text, #0A6FA3);
+}
+
+.cx-note-text {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: var(--ink, #14202E);
+}
+
+.cx-note-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink, #14202E);
+  resize: vertical;
+  background: var(--surface, #fff);
+  border: 1px solid var(--field, #C5CED8);
+  border-radius: 8px;
+}
+
+.cx-note-input:focus-visible {
+  outline: 2px solid var(--sky, #0E8FD0);
+  outline-offset: 1px;
+}
+
+.cx-note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-group.is-new { animation: none; }
+}

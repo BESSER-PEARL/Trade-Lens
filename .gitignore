@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.venv-agent/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Node (generated frontend)
+node_modules/
+dist/
+build/
+
+# Data: raw downloads and local databases are rebuilt by `python -m besser_sdmx load`
+data/raw/
+data/interim/
+*.sqlite
+*.sqlite3
+*.db
+*.parquet
+*.csv.gz
+
+# Generated code: python generate.py writes to build/generated/ (app/ is maintained by hand)
+build/
+output/
+generated/
+# ...except the forecasters BESSER generates for the backend (python model/forecast_nn.py --install)
+!app/backend/forecasting/generated/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+config.ini
+*.key
+*.pem
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Vendored BESSER (cloned + patched by scripts/setup.*) and generated app
+vendor/
+data/*.log
+# The live view spec the backend keeps (VIEW_STATE_PATH); version 0 is app/backend/view/baseline.json
+data/view_state.json
+data/view_state.json.*
+generated/.node_modules/
+
+# The app (app/, generated once, now edited by hand) is committed; its build outputs and local data are not
+app/frontend/node_modules/
+app/frontend/build/
+app/backend/data/
+*.log

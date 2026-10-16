@@ -1,0 +1,107 @@
+{
+  "agent": {
+    "name": "trend_finder",
+    "run_id": "trend_finder-20261016-0009b"
+  },
+  "base_version": 1,
+  "message": "The same comparisons as options on a line and a bar: an index line, and growth by chapter.",
+  "ops": [
+    {
+      "op": "upsert_panel",
+      "panel": {
+        "id": "trend_index",
+        "type": "line",
+        "title": "Exports and imports, rebased to 2015",
+        "subtitle": "Index, 2015 = 100",
+        "queries": [
+          {
+            "key": "imports",
+            "endpoint": "/insights/series",
+            "params": {
+              "flow": "IMPORT",
+              "freq": "A",
+              "start": "2015",
+              "end": "$period"
+            },
+            "label": "Imports",
+            "tone": "imports"
+          },
+          {
+            "key": "exports",
+            "endpoint": "/insights/series",
+            "params": {
+              "flow": "EXPORT",
+              "freq": "A",
+              "start": "2015",
+              "end": "$period"
+            },
+            "label": "Exports",
+            "tone": "exports"
+          }
+        ],
+        "options": {
+          "compare": "index",
+          "base_period": "2015",
+          "focus": "exports"
+        }
+      }
+    },
+    {
+      "op": "upsert_panel",
+      "panel": {
+        "id": "chapters_2024_2025",
+        "type": "bar",
+        "title": "Export growth by chapter, 2024 to 2025",
+        "queries": [
+          {
+            "key": "a",
+            "endpoint": "/insights/ranking",
+            "params": {
+              "by": "product",
+              "period": "2024",
+              "flow": "EXPORT",
+              "max_items": 30,
+              "threshold": 0
+            },
+            "label": "2024",
+            "tone": "exports"
+          },
+          {
+            "key": "b",
+            "endpoint": "/insights/ranking",
+            "params": {
+              "by": "product",
+              "period": "2025",
+              "flow": "EXPORT",
+              "max_items": 30,
+              "threshold": 0
+            },
+            "label": "2025",
+            "tone": "exports"
+          }
+        ],
+        "options": {
+          "compare": "yoy",
+          "sort": "delta",
+          "limit": 8,
+          "focus": "85"
+        }
+      }
+    },
+    {
+      "op": "add_mark",
+      "mark": {
+        "kind": "highlight",
+        "target": "chapters_2024_2025",
+        "thread": "chapters",
+        "params": {
+          "codes": [
+            "85"
+          ]
+        },
+        "note": "Electrical machinery more than doubled.",
+        "period": "2025"
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: MIT
+# LuxInsights agent configuration (BAF properties).
+# The OpenAI key is NOT read from here: set OPENAI_API_KEY in the environment or in the repository's
+# gitignored .env (see .env.example). Keep the placeholder below; never put a real key in this file.
+nlp:
+  language: en
+  openai:
+    api_key: YOUR-API-KEY
+    llm_name: gpt-6-luna
+platforms:
+  websocket:
+    host: localhost
+    port: 8766

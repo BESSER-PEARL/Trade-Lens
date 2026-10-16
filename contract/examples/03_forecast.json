@@ -1,0 +1,50 @@
+{
+  "agent": {"name": "forecaster", "run_id": "forecaster-20261016-0001"},
+  "base_version": 2,
+  "message": "A 2026 band for exports, from exponential smoothing on monthly data, with how far off the method was on the last complete year.",
+  "ops": [
+    {
+      "op": "add_mark",
+      "tmp_id": "fc",
+      "mark": {
+        "kind": "forecast",
+        "target": "trend",
+        "series": "exports",
+        "thread": "outlook",
+        "params": {"label": "2026 forecast"},
+        "query": {"endpoint": "/insights/forecast", "params": {"flow": "EXPORT", "freq": "M", "horizon": 12, "method": "ets", "interval": 0.8, "aggregate": "A"}},
+        "note": "Exports in 2026: {value}, with an interval of {low} to {high}. Tested on {tested}, the method was off by {error}.",
+        "facts": {
+          "value": {"query": "self", "path": "rows.-1.value", "format": "eur"},
+          "low": {"query": "self", "path": "rows.-1.low", "format": "eur"},
+          "high": {"query": "self", "path": "rows.-1.high", "format": "eur"},
+          "error": {"query": "self", "path": "backtest.mape", "format": "pct"},
+          "tested": {"query": "self", "path": "backtest.period", "format": "text"}
+        }
+      }
+    },
+    {
+      "op": "upsert_panel",
+      "after": "trend",
+      "panel": {
+        "id": "outlook",
+        "type": "text",
+        "title": "What comes next",
+        "text": "Exports in 2026 should land between {low} and {high}, against {last} in 2025. The method is {method} on monthly data, and on {tested} it was off by {error}. The smartphone line makes 2026 harder to call than usual.",
+        "queries": [
+          {"key": "forecast", "endpoint": "/insights/forecast", "params": {"flow": "EXPORT", "freq": "M", "horizon": 12, "method": "ets", "interval": 0.8, "aggregate": "A"}, "tone": "exports"},
+          {"key": "actual", "endpoint": "/insights/series", "params": {"flow": "EXPORT", "freq": "A", "start": "2025", "end": "2025"}, "tone": "exports"}
+        ],
+        "facts": {
+          "low": {"query": "forecast", "path": "rows.-1.low", "format": "eur"},
+          "high": {"query": "forecast", "path": "rows.-1.high", "format": "eur"},
+          "last": {"query": "actual", "path": "0.value", "format": "eur"},
+          "method": {"query": "forecast", "path": "method_label", "format": "text"},
+          "error": {"query": "forecast", "path": "backtest.mape", "format": "pct"},
+          "tested": {"query": "forecast", "path": "backtest.period", "format": "text"}
+        },
+        "provenance": {"sources": [{"url": "/insights/forecast?flow=EXPORT&freq=M&horizon=12&method=ets&interval=0.8&aggregate=A", "label": "Export forecast"}]}
+      }
+    }
+  ]
+}

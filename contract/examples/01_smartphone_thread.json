@@ -1,0 +1,84 @@
+{
+  "agent": {"name": "trend_finder", "run_id": "trend_finder-20261016-0001"},
+  "base_version": 0,
+  "message": "Exports rose in 2025, and most of the rise is one product line: smartphones bought from China and sold to France.",
+  "ops": [
+    {"op": "set_title", "title": "Luxembourg's trade in goods: where the 2025 export rise came from"},
+    {
+      "op": "upsert_panel",
+      "panel": {
+        "id": "headline",
+        "type": "text",
+        "title": "In short",
+        "text": "Exports rose by {rise} in 2025. Smartphones (CN8 85171300) went from {phones_before} to {phones_now}, and {to_france} of them went to France.",
+        "queries": [
+          {"key": "exports", "endpoint": "/insights/series", "params": {"flow": "EXPORT", "freq": "A", "start": "2024", "end": "2025"}, "tone": "exports"},
+          {"key": "phones", "endpoint": "/insights/series", "params": {"flow": "EXPORT", "freq": "A", "product": "85171300", "start": "2024", "end": "2025"}, "tone": "exports"},
+          {"key": "phones_partners", "endpoint": "/insights/ranking", "params": {"by": "partner", "period": "2025", "flow": "EXPORT", "product": "85171300"}, "tone": "exports"}
+        ],
+        "facts": {
+          "exports_before": {"query": "exports", "path": "0.value", "format": "eur"},
+          "exports_now": {"query": "exports", "path": "-1.value", "format": "eur"},
+          "rise": {"op": "diff", "of": ["exports_now", "exports_before"], "format": "eur"},
+          "phones_before": {"query": "phones", "path": "0.value", "format": "eur"},
+          "phones_now": {"query": "phones", "path": "-1.value", "format": "eur"},
+          "to_france": {"query": "phones_partners", "path": "items.[code=FR].share", "format": "pct"}
+        },
+        "provenance": {
+          "sources": [
+            {"url": "/insights/movers?by=product&period=2025&previous=2024&flow=EXPORT&level=4", "label": "Largest CN8 export movers, 2024 to 2025"}
+          ]
+        }
+      }
+    },
+    {
+      "op": "add_mark",
+      "tmp_id": "phones_thread",
+      "mark": {
+        "kind": "thread",
+        "target": "crossroads",
+        "thread": "smartphones",
+        "params": {"in_code": "CN", "out_code": "FR", "product": "85171300", "label": "Smartphones, China to France"},
+        "note": "Smartphones (CN8 85171300): {bought_cn} bought from China, {cn_share} of everything bought from China, and {sold_fr} sold to France. That looks like a transit flow; worth checking with STATEC.",
+        "facts": {
+          "bought_cn": {"endpoint": "/insights/ranking", "params": {"by": "partner", "period": "2025", "flow": "IMPORT", "product": "85171300"}, "path": "items.[code=CN].value", "format": "eur"},
+          "from_cn": {"endpoint": "/insights/ranking", "params": {"by": "partner", "period": "2025", "flow": "IMPORT", "max_items": 30}, "path": "items.[code=CN].value", "format": "eur"},
+          "cn_share": {"op": "ratio", "of": ["bought_cn", "from_cn"], "format": "pct"},
+          "sold_fr": {"endpoint": "/insights/ranking", "params": {"by": "partner", "period": "2025", "flow": "EXPORT", "product": "85171300"}, "path": "items.[code=FR].value", "format": "eur"}
+        },
+        "provenance": {
+          "sources": [
+            {"url": "/insights/movers?by=product&period=2025&previous=2024&flow=EXPORT&level=4", "label": "Largest CN8 export movers, 2024 to 2025"}
+          ]
+        }
+      }
+    },
+    {
+      "op": "upsert_panel",
+      "after": "crossroads",
+      "panel": {
+        "id": "phones_drill",
+        "type": "bar",
+        "title": "From electrical machinery down to the smartphone line",
+        "subtitle": "Exports 2025: HS 85, then heading 8517, then subheading 851713",
+        "queries": [
+          {"key": "hs4", "label": "Headings of HS 85", "endpoint": "/insights/ranking/records", "params": {"by": "product", "parent": "85", "period": "2025", "flow": "EXPORT", "max_items": 5}, "tone": "exports"},
+          {"key": "hs6", "label": "Subheadings of 8517", "endpoint": "/insights/ranking/records", "params": {"by": "product", "parent": "8517", "period": "2025", "flow": "EXPORT", "max_items": 5}, "tone": "exports"},
+          {"key": "cn8", "label": "CN8 lines of 851713", "endpoint": "/insights/ranking/records", "params": {"by": "product", "parent": "851713", "period": "2025", "flow": "EXPORT", "max_items": 5}, "tone": "exports"}
+        ],
+        "options": {"x": "name", "y": "value", "format": "eur", "orientation": "horizontal", "drill": true, "exclude_codes": ["OTHER"]}
+      }
+    },
+    {
+      "op": "add_mark",
+      "tmp_id": "phones_path",
+      "mark": {
+        "kind": "highlight",
+        "target": "phones_drill",
+        "thread": "smartphones",
+        "params": {"codes": ["8517", "851713", "85171300"], "label": "The smartphone line"},
+        "note": "The path from chapter 85 to the smartphone line, CN8 85171300."
+      }
+    }
+  ]
+}

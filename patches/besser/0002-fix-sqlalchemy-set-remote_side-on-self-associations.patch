@@ -1,0 +1,32 @@
+From c11c0db25ca986bb9ef19ba59fef54929d4a8176 Mon Sep 17 00:00:00 2001
+From: BESSER STATEC hackathon team <besser@list.lu>
+Date: Wed, 14 Oct 2026 13:24:51 +0200
+Subject: [PATCH 2/5] fix(sqlalchemy): set remote_side on self-associations
+
+A self-association (e.g. Product.parent / Product.children) was generated
+without remote_side, so SQLAlchemy saw both ends as one-to-many and refused
+to configure the mappers.
+---
+ besser/generators/sql_alchemy/templates/helpers.py.j2 | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/besser/generators/sql_alchemy/templates/helpers.py.j2 b/besser/generators/sql_alchemy/templates/helpers.py.j2
+index 5a2bb11..f4c054f 100644
+--- a/besser/generators/sql_alchemy/templates/helpers.py.j2
++++ b/besser/generators/sql_alchemy/templates/helpers.py.j2
+@@ -90,6 +90,10 @@
+ {#- uselist is spelled out because these relationships are assigned after the class
+     body: SQLAlchemy never sees the Mapped_["X"] annotation and would otherwise infer
+     a collection from the foreign-key direction, turning a 0..1 end into a list. #}
+-{{class.name}}.{{end.name}}: Mapped_["{{end.type.name}}"] = relationship("{{end.type.name}}", back_populates="{{other_end.name}}", uselist=False{% if fk_needed %}, foreign_keys=[{{ fk_expr }}]{% endif %}{% if is_deferred %}, post_update=True{% endif %})
++{#- A self-association (both ends typed by this class) needs remote_side on its
++    many-to-one end, or SQLAlchemy reads both ends as one-to-many and refuses to map. #}
++    {%- set is_self = end.type.name == other_end.type.name %}
++    {%- set pk = (end.type.attributes | selectattr('is_id') | map(attribute='name') | first) or 'id' %}
++{{class.name}}.{{end.name}}: Mapped_["{{end.type.name}}"] = relationship("{{end.type.name}}", back_populates="{{other_end.name}}", uselist=False{% if fk_needed %}, foreign_keys=[{{ fk_expr }}]{% endif %}{% if is_self %}, remote_side=[{{ end.type.name }}.{{ pk }}]{% endif %}{% if is_deferred %}, post_update=True{% endif %})
+     {%- endif -%}
+ {%- endmacro %}
+\ No newline at end of file
+-- 
+2.55.0.windows.4
+

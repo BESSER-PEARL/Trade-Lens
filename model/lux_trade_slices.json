@@ -1,0 +1,33 @@
+{
+  "description": "What the dashboard needs from Eurostat ds-045409, focused on Luxembourg. '@level:N' expands to every code at that level of the product hierarchy (1 = HS2 chapters).",
+  "slices": [
+    {"label": "LU partner x HS2, annual", "start": "1999", "end": "2025",
+     "key": {"freq": "A", "reporter": "LU", "partner": "", "product": ["TOTAL", "@level:1"], "flow": ["1", "2"], "indicators": "VALUE_IN_EUROS"}},
+    {"label": "LU all products vs world, annual", "start": "2015", "end": "2025",
+     "key": {"freq": "A", "reporter": "LU", "partner": "WORLD", "product": "", "flow": ["1", "2"], "indicators": "VALUE_IN_EUROS"}},
+    {"label": "LU all products, top 8 partners, annual", "start": "2023", "end": "2025",
+     "key": {"freq": "A", "reporter": "LU", "partner": ["BE", "DE", "FR", "NL", "IT", "ES", "US", "CN"], "product": "", "flow": ["1", "2"], "indicators": "VALUE_IN_EUROS"}},
+    {"label": "LU HS2 vs world, monthly", "start": "1999-01", "end": "2026-12",
+     "key": {"freq": "M", "reporter": "LU", "partner": "WORLD", "product": ["TOTAL", "@level:1"], "flow": ["1", "2"], "indicators": "VALUE_IN_EUROS"}},
+    {"label": "LU partners total, monthly", "start": "2015-01", "end": "2026-12",
+     "key": {"freq": "M", "reporter": "LU", "partner": "", "product": "TOTAL", "flow": ["1", "2"], "indicators": "VALUE_IN_EUROS"}},
+    {"label": "EU27 reporters x HS2 vs world, annual", "start": "1999", "end": "2025",
+     "key": {"freq": "A",
+             "reporter": ["AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "HR", "HU", "IE", "IT", "LT", "LV", "MT", "NL", "PL", "PT", "RO", "SE", "SI", "SK"],
+             "partner": "WORLD", "product": ["TOTAL", "@level:1"], "flow": ["1", "2"], "indicators": "VALUE_IN_EUROS"}},
+    {"label": "EU27 reporters x US/CN/GB/CH x HS2, annual", "start": "2015", "end": "2025",
+     "key": {"freq": "A",
+             "reporter": ["AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "HR", "HU", "IE", "IT", "LT", "LV", "MT", "NL", "PL", "PT", "RO", "SE", "SI", "SK"],
+             "partner": ["US", "CN", "GB", "CH"], "product": ["TOTAL", "@level:1"], "flow": ["1", "2"], "indicators": "VALUE_IN_EUROS"}},
+    {"label": "7 EU peers x US/CN/GB/CH/world x HS2, monthly", "start": "2019-01", "end": "2026-12",
+     "key": {"freq": "M", "reporter": ["AT", "BE", "DE", "ES", "FR", "IT", "NL"],
+             "partner": ["US", "CN", "GB", "CH", "WORLD"], "product": ["TOTAL", "@level:1"], "flow": ["1", "2"], "indicators": "VALUE_IN_EUROS"}},
+    {"label": "Other EU27 reporters x US/CN/GB/CH/world, total goods, monthly", "start": "2019-01", "end": "2026-12",
+     "key": {"freq": "M",
+             "reporter": ["BG", "CY", "CZ", "DK", "EE", "FI", "GR", "HR", "HU", "IE", "LT", "LV", "MT", "PL", "PT", "RO", "SE", "SI", "SK"],
+             "partner": ["US", "CN", "GB", "CH", "WORLD"], "product": "TOTAL", "flow": ["1", "2"], "indicators": "VALUE_IN_EUROS"}},
+    {"label": "LU all products vs world, quantities, annual", "start": "2015", "end": "2025",
+     "key": {"freq": "A", "reporter": "LU", "partner": "WORLD", "product": "", "flow": ["1", "2"],
+             "indicators": ["QUANTITY_IN_100KG", "SUPPLEMENTARY_QUANTITY"]}}
+  ]
+}

@@ -1,0 +1,292 @@
+From 632b994aab6b4f8b60acac22da7a7b0bf3fc0d7b Mon Sep 17 00:00:00 2001
+From: BESSER STATEC hackathon team <besser@list.lu>
+Date: Wed, 14 Oct 2026 13:24:56 +0200
+Subject: [PATCH 5/5] feat(gui): DataBinding.endpoint
+
+A chart or metric card can read from any backend endpoint (for example an
+analytics API), not only the CRUD collection of its class. Without it, a
+chart on a large table downloads every row and aggregates in the browser.
+Carried by gui_model_to_code and both web-editor converters; also fixes
+metric-card titles lost in buml_to_json and chart-level bindings dropped
+by json_to_buml.
+---
+
+diff --git a/besser/BUML/metamodel/gui/binding.py b/besser/BUML/metamodel/gui/binding.py
+index 99c2bb2..63938cc 100644
+--- a/besser/BUML/metamodel/gui/binding.py
++++ b/besser/BUML/metamodel/gui/binding.py
+@@ -44,6 +44,9 @@ class DataBinding(Element):
+         aggregation (DataAggregation | str, optional): How the bound records are
+             reduced to one value per label: a metric card's value, or a chart's
+             value per ``label_field`` group. Defaults to None (no aggregation).
++        endpoint (str, optional): Backend path to read the records from instead of the
++            domain concept's CRUD collection (``/<class>/``), e.g. an analytics endpoint
++            such as ``/insights/ranking/records?by=partner&period=2025``. Defaults to None.
+ 
+     Attributes:
+         name (str): Name of the data binding.
+@@ -56,11 +59,13 @@ class DataBinding(Element):
+         data_field_path (str): Dot notation path for nested data field.
+         filter_expression (str): Raw filter expression string.
+         aggregation (DataAggregation | None): How the bound records are aggregated.
++        endpoint (str | None): Backend path overriding the domain concept's collection.
+     """
+     def __init__(self, domain_concept: Class, name: str = None, visualization_attrs: set[Property] = None,
+                  label_field: Property = None, data_field: Property = None,
+                  data_filter: Constraint = None, label_field_path: str = None, data_field_path: str = None,
+-                 filter_expression: str = None, aggregation: DataAggregation = None):
++                 filter_expression: str = None, aggregation: DataAggregation = None,
++                 endpoint: str = None):
+         super().__init__()
+         self.name = name or f"{domain_concept.name if domain_concept else 'Unknown'}DataBinding"
+         self.domain_concept = domain_concept
+@@ -72,6 +77,19 @@ class DataBinding(Element):
+         self.data_field_path = data_field_path    # For nested fields like "measure.value"
+         self.filter_expression = filter_expression  # Raw filter string from UI
+         self.aggregation = aggregation
++        self.endpoint = endpoint
++
++    @property
++    def endpoint(self) -> str | None:
++        """str | None: Backend path overriding the domain concept's collection."""
++        return self._endpoint
++
++    @endpoint.setter
++    def endpoint(self, endpoint: str | None) -> None:
++        """Set the backend path (relative to the API root, or an absolute URL)."""
++        if endpoint is not None and not isinstance(endpoint, str):
++            raise TypeError("endpoint must be a string or None")
++        self._endpoint = endpoint
+ 
+     @property
+     def name(self) -> str:
+diff --git a/besser/generators/react/serialization.py b/besser/generators/react/serialization.py
+index ccaff09..d37c933 100644
+--- a/besser/generators/react/serialization.py
++++ b/besser/generators/react/serialization.py
+@@ -948,8 +962,8 @@ class GuiSerializationMixin:
+         label_field_path = getattr(binding, "label_field_path", None)
+         data_field_path = getattr(binding, "data_field_path", None)
+ 
+-        endpoint = None
+-        if domain and getattr(domain, "name", None):
++        endpoint = getattr(binding, "endpoint", None)
++        if not endpoint and domain and getattr(domain, "name", None):
+             endpoint = f"/{domain.name.lower()}/"
+ 
+         # Use path for nested fields, otherwise use field attribute name
+@@ -1030,6 +1044,8 @@ class GuiSerializationMixin:
+                 if domain:
+                     series_data["dataSource"] = domain.name.lower()
+                     series_data["endpoint"] = f"/{domain.name.lower()}/"
++                if getattr(binding, "endpoint", None):
++                    series_data["endpoint"] = binding.endpoint
+ 
+                 # Use label_field_path for nested fields, otherwise use label_field attribute
+                 label_field_path = getattr(binding, "label_field_path", None)
+diff --git a/besser/utilities/buml_code_builder/gui_model_builder.py b/besser/utilities/buml_code_builder/gui_model_builder.py
+index 7e94260..7a6c633 100644
+--- a/besser/utilities/buml_code_builder/gui_model_builder.py
++++ b/besser/utilities/buml_code_builder/gui_model_builder.py
+@@ -1426,6 +1440,9 @@ def _write_data_binding(f, binding_var, binding):
+         binding_params.append(f'filter_expression="{_escape_string(filter_expr)}"')
+     if aggregation is not None:
+         binding_params.append(f'aggregation="{aggregation.value}"')
++    endpoint = getattr(binding, "endpoint", None)
++    if endpoint:
++        binding_params.append(f'endpoint="{_escape_string(endpoint)}"')
+     f.write(f"{binding_var} = None\n")
+     f.write("try:\n")
+     f.write(f"    {binding_var} = build_data_binding(domain_model, {', '.join(binding_params)})\n")
+diff --git a/besser/utilities/web_modeling_editor/backend/services/converters/buml_to_json/gui_diagram_converter.py b/besser/utilities/web_modeling_editor/backend/services/converters/buml_to_json/gui_diagram_converter.py
+index 443ff49..bc170f6 100644
+--- a/besser/utilities/web_modeling_editor/backend/services/converters/buml_to_json/gui_diagram_converter.py
++++ b/besser/utilities/web_modeling_editor/backend/services/converters/buml_to_json/gui_diagram_converter.py
+@@ -489,6 +492,20 @@ def _apply_chart_data_binding_attributes(component: ViewComponent, attrs: Dict[s
+     aggregation = getattr(binding, "aggregation", None)
+     if aggregation is not None:
+         attrs.setdefault("aggregation", aggregation.value)
++    # Nested paths and endpoints have no class-diagram element to point at, so they
++    # travel as their own attributes (read back by chart_parsers).
++    label_path = getattr(binding, "label_field_path", None)
++    data_path = getattr(binding, "data_field_path", None)
++    if label_path and not label_name:
++        attrs.setdefault("label-field-path", label_path)
++    if data_path and not data_name:
++        attrs.setdefault("data-field-path", data_path)
++    filter_expression = getattr(binding, "filter_expression", None)
++    if filter_expression:
++        attrs.setdefault("filter", str(filter_expression))
++    endpoint = getattr(binding, "endpoint", None)
++    if endpoint:
++        attrs.setdefault("data-endpoint", endpoint)
+ def _apply_button_attributes(button: Button, attrs: Dict[str, Any]) -> None:
+     attrs.setdefault("button-label", button.label or button.name or "Button")
+     action_type = attrs.get("action-type")
+@@ -630,7 +647,7 @@ def _apply_table_attributes(chart: Table, attrs: Dict[str, Any]) -> None:
+         attrs["columns"] = columns_list
+ def _apply_metric_card_attributes(card: MetricCard, attrs: Dict[str, Any]) -> None:
+     _apply_chart_data_binding_attributes(card, attrs)
+-    attrs.setdefault("metric-title", card.title or card.name)
++    attrs.setdefault("metric-title", card.metric_title or card.title or card.name)
+     attrs.setdefault("format", getattr(card, "format", None) or "number")
+     attrs.setdefault("value-color", getattr(card, "value_color", "#2c3e50"))
+     attrs.setdefault("value-size", getattr(card, "value_size", 32))
+diff --git a/besser/utilities/web_modeling_editor/backend/services/converters/json_to_buml/gui_processors/chart_parsers.py b/besser/utilities/web_modeling_editor/backend/services/converters/json_to_buml/gui_processors/chart_parsers.py
+index 45bfa85..3ef0574 100644
+--- a/besser/utilities/web_modeling_editor/backend/services/converters/json_to_buml/gui_processors/chart_parsers.py
++++ b/besser/utilities/web_modeling_editor/backend/services/converters/json_to_buml/gui_processors/chart_parsers.py
+@@ -32,6 +32,42 @@ def _parse_aggregation(*sources: Dict[str, Any]):
+     return None
+ 
+ 
++def _parse_endpoint(*sources: Dict[str, Any]):
++    """The backend ``endpoint`` a binding reads from (``data-endpoint``), if any."""
++    for source in sources:
++        if isinstance(source, dict):
++            value = source.get('data-endpoint')
++            if isinstance(value, str) and value.strip():
++                return value.strip()
++    return None
++
++
++def _apply_chart_level_binding(chart, attrs: Dict[str, Any], class_model, domain_model) -> None:
++    """Rebuild a chart's own ``data_binding`` (as opposed to its series' bindings).
++
++    ``buml_to_json`` writes a chart-level binding as ``data-source`` / ``label-field`` /
++    ``data-field`` / ``data-endpoint`` attributes; without this the binding (and its
++    endpoint) was dropped on re-import whenever the chart had no series.
++    """
++    if chart is None or getattr(chart, "data_binding", None) is not None or not attrs.get('data-source'):
++        return
++    domain_class, label_field, data_field, label_path, data_path = _parse_chart_data_binding(
++        attrs, class_model, domain_model)
++    if not domain_class:
++        return
++    filter_expr = attrs.get('filter')
++    chart.data_binding = DataBinding(
++        domain_concept=domain_class,
++        label_field=label_field,
++        data_field=data_field,
++        label_field_path=label_path,
++        data_field_path=data_path,
++        filter_expression=filter_expr.strip() if isinstance(filter_expr, str) and filter_expr.strip() else None,
++        aggregation=_parse_aggregation(attrs),
++        endpoint=_parse_endpoint(attrs),
++    )
++
++
+ def _parse_chart_data_binding(attrs: Dict[str, Any], class_model, domain_model) -> tuple:
+     """
+     Parse common chart data binding attributes.
+@@ -90,7 +126,10 @@ def _parse_chart_data_binding(attrs: Dict[str, Any], class_model, domain_model)
+     # Resolve data source
+     data_source_el = get_element_by_id(class_model, attrs.get('data-source'))
+     data_source_name = data_source_el.get('name') if data_source_el else None
+-    domain_class = domain_model.get_class_by_name(data_source_name) if data_source_name else None
++    if not data_source_name and isinstance(attrs.get('data-source'), str):
++        # Exported B-UML models (buml_to_json) name the class instead of its element id.
++        data_source_name = attrs.get('data-source')
++    domain_class = domain_model.get_class_by_name(data_source_name) if (data_source_name and domain_model) else None
+ 
+     # Parse label and data fields
+     label_field_raw = attrs.get('label-field')
+@@ -98,6 +137,8 @@ def _parse_chart_data_binding(attrs: Dict[str, Any], class_model, domain_model)
+ 
+     label_field, label_field_path = parse_field_value(label_field_raw, domain_class)
+     data_field, data_field_path = parse_field_value(data_field_raw, domain_class)
++    label_field_path = label_field_path or attrs.get('label-field-path') or None
++    data_field_path = data_field_path or attrs.get('data-field-path') or None
+ 
+     return domain_class, label_field, data_field, label_field_path, data_field_path
+ 
+@@ -179,6 +220,7 @@ def parse_line_chart(view_comp: Dict[str, Any], class_model, domain_model) -> Li
+                     data_field_path=data_field_path,
+                     filter_expression=data_filter,
+                     aggregation=_parse_aggregation(s_attrs, attrs),
++                    endpoint=_parse_endpoint(s_attrs, attrs),
+                 )
+ 
+             # Extract color from series attributes and create styling
+@@ -209,6 +251,7 @@ def parse_line_chart(view_comp: Dict[str, Any], class_model, domain_model) -> Li
+         title=title_value,
+         primary_color=primary_color
+     )
++    _apply_chart_level_binding(line_chart, attrs, class_model, domain_model)
+     _attach_chart_metadata(line_chart, view_comp)
+     return line_chart
+ 
+@@ -273,6 +316,7 @@ def parse_bar_chart(view_comp: Dict[str, Any], class_model, domain_model) -> Bar
+                     data_field_path=data_field_path,
+                     filter_expression=data_filter,
+                     aggregation=_parse_aggregation(s_attrs, attrs),
++                    endpoint=_parse_endpoint(s_attrs, attrs),
+                 )
+ 
+             # Extract color from series attributes and create styling
+@@ -304,6 +348,7 @@ def parse_bar_chart(view_comp: Dict[str, Any], class_model, domain_model) -> Bar
+         title=title_value,
+         primary_color=primary_color
+     )
++    _apply_chart_level_binding(bar_chart, attrs, class_model, domain_model)
+     _attach_chart_metadata(bar_chart, view_comp)
+     return bar_chart
+ 
+@@ -368,6 +413,7 @@ def parse_pie_chart(view_comp: Dict[str, Any], class_model, domain_model) -> Pie
+                     data_field_path=data_field_path,
+                     filter_expression=data_filter,
+                     aggregation=_parse_aggregation(s_attrs, attrs),
++                    endpoint=_parse_endpoint(s_attrs, attrs),
+                 )
+             styling = None
+             if 'styling' in s_attrs:
+@@ -410,6 +456,7 @@ def parse_pie_chart(view_comp: Dict[str, Any], class_model, domain_model) -> Pie
+         title=title_value,
+         primary_color=primary_color
+     )
++    _apply_chart_level_binding(pie_chart, attrs, class_model, domain_model)
+     _attach_chart_metadata(pie_chart, view_comp)
+     return pie_chart
+ 
+@@ -474,6 +521,7 @@ def parse_radar_chart(view_comp: Dict[str, Any], class_model, domain_model) -> R
+                     data_field_path=data_field_path,
+                     filter_expression=data_filter,
+                     aggregation=_parse_aggregation(s_attrs, attrs),
++                    endpoint=_parse_endpoint(s_attrs, attrs),
+                 )
+             styling = None
+             if 'styling' in s_attrs:
+@@ -495,6 +543,7 @@ def parse_radar_chart(view_comp: Dict[str, Any], class_model, domain_model) -> R
+         title=title_value,
+         primary_color=primary_color
+     )
++    _apply_chart_level_binding(radar_chart, attrs, class_model, domain_model)
+     _attach_chart_metadata(radar_chart, view_comp)
+     return radar_chart
+ 
+@@ -574,6 +623,7 @@ def parse_radial_bar_chart(view_comp: Dict[str, Any], class_model, domain_model)
+                     data_field=data_field,
+                     filter_expression=data_filter,
+                     aggregation=_parse_aggregation(s_attrs, attrs),
++                    endpoint=_parse_endpoint(s_attrs, attrs),
+                 )
+             styling = None
+             if 'styling' in s_attrs:
+@@ -594,6 +644,7 @@ def parse_radial_bar_chart(view_comp: Dict[str, Any], class_model, domain_model)
+         title=title_value,
+         primary_color=primary_color
+     )
++    _apply_chart_level_binding(radial_bar_chart, attrs, class_model, domain_model)
+     _attach_chart_metadata(radial_bar_chart, view_comp)
+     return radial_bar_chart
+ 
+@@ -834,7 +885,9 @@ def parse_metric_card(view_comp: Dict[str, Any], class_model, domain_model) -> M
+             label_field=None,  # Metric cards don't need label field
+             data_field=data_field,
+             data_field_path=data_field_path,
++            label_field_path=attrs.get('label-field-path') or None,
+             aggregation=_parse_aggregation(attrs),
++            endpoint=_parse_endpoint(attrs),
+         )
+ 
+     # Create metric card

@@ -1,0 +1,90 @@
+/* Tailwind v4: this single import IS the build step. Without it every
+   utility class in the generated pages is inert and the layout falls
+   back to browser defaults. */
+@import "tailwindcss";
+
+/* The typefaces, self-hosted (public/fonts, SIL Open Font License 1.1, licences next to the files):
+   Archivo with its width and weight axes, Newsreader with its optical size and weight axes. Latin
+   subsets as woff2, so the page looks the same offline or on a network that blocks Google Fonts. */
+@font-face {
+  font-family: 'Archivo';
+  src: url('/fonts/Archivo-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  src: url('/fonts/Newsreader-Variable.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Design tokens of the Crossroads page. The data is only ever sky (exports)
+   and steel (imports); any other colour on the page was drawn by an agent. */
+:root {
+  --paper: #F5F7F9;
+  --surface: #FFFFFF;
+  --ink: #14202E;
+  --ink-2: #3B4858;
+  --muted: #5E6B7A;
+  --sky: #0E8FD0;
+  --sky-text: #0A6FA3;
+  --steel: #7A8796;
+  --steel-text: #5E6B7A;
+  --rule: #DCE2E8;
+  --rule-soft: #E6EAEF;
+  --field: #C5CED8;
+  --font-ui: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-agent: 'Newsreader', Georgia, 'Times New Roman', serif;
+}
+
+html {
+  background: var(--paper);
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: ui-monospace, 'Cascadia Mono', Menlo, Consolas, 'Courier New', monospace;
+}
+
+/* Big figures: condensed, heavy, tabular. */
+.num {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.cond {
+  font-stretch: 68%;
+}
+
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

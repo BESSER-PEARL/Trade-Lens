@@ -1,0 +1,97 @@
+From 6788ba8d7d3b43b50c73f9631a8bcc0453602232 Mon Sep 17 00:00:00 2001
+From: BESSER STATEC hackathon team <besser@list.lu>
+Date: Wed, 14 Oct 2026 13:24:52 +0200
+Subject: [PATCH 3/5] fix(java): role-based helpers when two collections share
+ a type
+
+When two associations of a class point to the same type (Observation.reporter
+and Observation.partner -> Country), Country got two add<Type>() methods and
+the generated Java did not compile. Helpers are named after the role then.
+---
+ .../templates/java_template.py.j2             | 11 +++++-
+ .../java/test_java_shared_type_collections.py | 37 +++++++++++++++++++
+ 2 files changed, 46 insertions(+), 2 deletions(-)
+ create mode 100644 tests/generators/java/test_java_shared_type_collections.py
+
+diff --git a/besser/generators/java_classes/templates/java_template.py.j2 b/besser/generators/java_classes/templates/java_template.py.j2
+index 97b6057..dbd15a8 100644
+--- a/besser/generators/java_classes/templates/java_template.py.j2
++++ b/besser/generators/java_classes/templates/java_template.py.j2
+@@ -184,6 +184,13 @@ public class {{ class_obj.name }} {{ extends }}{
+         this.{{ attribs[i+1] }} = {{ attribs[i+1] }};
+     }
+ {% endfor %}
++{# Element types held by more than one collection (e.g. Country holding the Observations
++   of both Observation.reporter and Observation.partner): their add helpers are named after
++   the role (addToObservationsAsPartner), or the class would declare addObservation twice. #}
++{% set list_types = [] %}
++{% for i in range(0, assocs|length, 2) %}
++    {% if assocs[i][:4] == "List" %}{% do list_types.append(assocs[i][5:-1]) %}{% endif %}
++{% endfor %}
+ {% for i in range(0, assocs|length, 2) %}
+ {% set aname = assocs[i+1][0]|upper ~ assocs[i+1][1:] %}
+ 
+@@ -193,7 +200,7 @@ public class {{ class_obj.name }} {{ extends }}{
+         return this.{{ assocs[i+1] }};
+     }
+ 
+-    {% if assocs[i+1] in self_assoc_names %}
++    {% if assocs[i+1] in self_assoc_names or list_types.count(element_type) > 1 %}
+     public void addTo{{ aname }}({{ element_type }} {{ element_type|lower }}) {
+         this.{{ assocs[i+1] }}.add({{ element_type|lower }});
+     }
+@@ -216,7 +223,7 @@ public class {{ class_obj.name }} {{ extends }}{
+ {% for i in range(0, assocs|length, 2) %}
+     {% if assocs[i][:4] == "List" %}
+         {% set element_type = assocs[i][5:-1] %}
+-        {% if assocs[i+1] in self_assoc_names %}
++        {% if assocs[i+1] in self_assoc_names or list_types.count(element_type) > 1 %}
+             {% do generated_assoc_methods.append('addTo' ~ assocs[i+1][0]|upper ~ assocs[i+1][1:]) %}
+         {% else %}
+             {% do generated_assoc_methods.append('add' + element_type) %}
+diff --git a/tests/generators/java/test_java_shared_type_collections.py b/tests/generators/java/test_java_shared_type_collections.py
+new file mode 100644
+index 0000000..7f958f9
+--- /dev/null
++++ b/tests/generators/java/test_java_shared_type_collections.py
+@@ -0,0 +1,37 @@
++"""Two associations to the same class must not produce two identical add helpers."""
++import os
++
++from besser.BUML.metamodel.structural import (
++    BinaryAssociation, Class, DomainModel, Multiplicity, Property, StringType,
++)
++from besser.generators.java_classes import JavaGenerator
++
++
++def _model(roles):
++    country = Class(name="Country", attributes={Property(name="code", type=StringType)})
++    obs = Class(name="Observation", attributes={Property(name="value", type=StringType)})
++    assocs = set()
++    for role, back in roles:
++        assocs.add(BinaryAssociation(name=f"obs_{role}", ends={
++            Property(name=role, type=country, multiplicity=Multiplicity(1, 1)),
++            Property(name=back, type=obs, multiplicity=Multiplicity(0, "*")),
++        }))
++    return DomainModel(name="Trade", types={country, obs}, associations=assocs)
++
++
++def _country_source(tmp_path, roles):
++    JavaGenerator(model=_model(roles), output_dir=str(tmp_path)).generate()
++    return open(os.path.join(str(tmp_path), "Country.java"), encoding="utf-8").read()
++
++
++def test_collections_of_the_same_type_get_role_based_helpers(tmp_path):
++    source = _country_source(tmp_path, [("reporter", "observations_as_reporter"),
++                                        ("partner", "observations_as_partner")])
++    assert "public void addObservation(" not in source
++    assert "public void addToObservations_as_reporter(Observation observation)" in source
++    assert "public void addToObservations_as_partner(Observation observation)" in source
++
++
++def test_a_single_collection_keeps_the_type_based_helper(tmp_path):
++    source = _country_source(tmp_path, [("partner", "observations")])
++    assert "public void addObservation(Observation observation)" in source
+-- 
+2.55.0.windows.4
+

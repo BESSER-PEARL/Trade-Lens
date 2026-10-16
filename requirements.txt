@@ -1,0 +1,20 @@
+# Python 3.11+. Tested in a clean venv on 2026-10-14.
+# BESSER itself is installed from vendor/BESSER (v8.1.0 + patches/besser/)
+# by scripts/setup.sh or scripts/setup.ps1: the PyPI wheel of 8.1.0 lacks the web-app templates.
+pandas==3.0.6          # ETL and analysis
+requests==2.31.0       # SDMX APIs (version constrained by besser)
+statsmodels==0.15.0    # STL seasonal adjustment
+ruptures==1.1.9         # change-point detection (Trends page)
+scikit-learn==1.7.2    # gradient boosting in the forecast ensemble (app/backend/forecasting)
+# Generated backend (FastAPI + SQLAlchemy)
+fastapi==0.110.0
+uvicorn==0.28.0
+pydantic==2.6.3
+SQLAlchemy==2.1.4
+python-multipart==0.0.32
+# View spec and agents (contract/, app/backend/view/, agents/)
+jsonschema==4.26.0     # validates view specs and op batches
+websockets==17.2       # agent chat server (stock BESSER WebSocket protocol)
+httpx==0.27.2          # agents/kit clients for /insights and /view
+# Tests (python -m pytest)
+pytest==7.4.0          # pinned by bocl (a BESSER dependency)

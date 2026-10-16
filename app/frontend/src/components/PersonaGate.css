@@ -1,0 +1,562 @@
+.pg {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background:
+    radial-gradient(900px 500px at 12% -10%, color-mix(in srgb, var(--accent, #0E8FD0) 16%, transparent), transparent 70%),
+    radial-gradient(700px 420px at 100% 100%, rgba(14, 143, 208, 0.10), transparent 70%),
+    var(--paper, #F5F7F9);
+  transition: background 0.4s ease;
+  animation: pg-in 0.35s ease both;
+}
+
+.pg-scroll {
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: clamp(16px, 3vh, 36px) clamp(16px, 4vw, 56px) 28px;
+}
+
+.pg-hero,
+.pg-source,
+.pg-pick,
+.pg-grid,
+.pg-agents,
+.pg-actions {
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pg-hero {
+  margin-bottom: clamp(12px, 2.4vh, 20px);
+}
+
+.pg-title {
+  margin: 0;
+  max-width: 19em;
+  font-size: clamp(30px, 3.9vw, 46px);
+  text-wrap: balance;
+  line-height: 1.02;
+  font-weight: 800;
+  font-stretch: 68%;
+  letter-spacing: -0.015em;
+}
+
+.pg-brand {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 1em;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  color: var(--sky-text, #0A6FA3);
+}
+
+.pg-need {
+  color: var(--accent);
+  font-weight: 700;
+  animation: pg-swap 0.3s ease both;
+}
+
+/* Where the figures come from: said plainly, because it is why the page can be trusted. */
+.pg-source {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-sizing: border-box;
+  padding: 14px 18px;
+  margin-bottom: clamp(12px, 2vh, 18px);
+  overflow: hidden;
+  color: var(--ink-2, #3B4858);
+  background: linear-gradient(100deg, #ffffff 0%, #f1f6fd 100%);
+  border: 1px solid #d3def0;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 51, 153, 0.07);
+}
+
+/* a quiet rule of the same blue down the left edge */
+.pg-source::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: linear-gradient(180deg, #0a4fc4, #003399);
+}
+
+.pg-source-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-left: 6px;
+  color: #fff;
+  background: linear-gradient(145deg, #1a5fd0, #003399);
+  border-radius: 13px;
+  box-shadow: 0 6px 14px rgba(0, 51, 153, 0.28);
+}
+
+.pg-source-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pg-source-title {
+  font-size: 16.5px;
+  font-weight: 700;
+  color: #0b2a6b;
+}
+
+.pg-source-text {
+  font-size: 14.5px;
+  line-height: 1.45;
+  max-width: 62em;
+}
+
+.pg-source-link {
+  flex: none;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #003399;
+  white-space: nowrap;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid #b9c9e6;
+  border-radius: 999px;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.pg-source-link:hover {
+  background: #e8f0fc;
+  border-color: #003399;
+  transform: translateY(-1px);
+}
+
+.pg-source-link:focus-visible {
+  outline: 3px solid #003399;
+  outline-offset: 2px;
+}
+
+.pg-pick {
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted, #5E6B7A);
+}
+
+/* The readers, in one row where there is room. */
+.pg-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pg-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 14px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: var(--surface, #fff);
+  border: 1px solid var(--rule, #DCE2E8);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(20, 32, 46, 0.04);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.pg-card:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(20, 32, 46, 0.10);
+}
+
+.pg-card.is-on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent), 0 12px 28px color-mix(in srgb, var(--accent) 22%, transparent);
+  transform: translateY(-3px);
+}
+
+.pg-card:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.pg-card:focus-visible,
+.pg-skip:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.pg-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 4px;
+  border-radius: 11px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(145deg, var(--accent), color-mix(in srgb, var(--accent) 60%, #000));
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.pg-card-name {
+  font-size: 16.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.pg-card-tag {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--muted, #5E6B7A);
+}
+
+.pg-current {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 1px 7px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+}
+
+/* The four agents, with questions that fit the reader pointed at. */
+.pg-agents {
+  margin-top: clamp(12px, 2.2vh, 20px);
+}
+
+.pg-agents-title {
+  margin: 0 0 12px;
+  font-size: 17px;
+  font-weight: 700;
+  animation: pg-swap 0.25s ease both;
+}
+
+.pg-agents-title span {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.pg-agents-explainer {
+  max-width: 70em;
+  margin: 0 0 16px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2, #3B4858);
+}
+
+.pg-agent-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  animation: pg-swap 0.25s ease both;
+}
+
+.pg-agent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px 16px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--rule, #DCE2E8);
+  border-top: 4px solid var(--pen);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(20, 32, 46, 0.06);
+}
+
+.pg-agent-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-pen);
+}
+
+.pg-agent-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--pen);
+}
+
+.pg-agent-can {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--muted, #5E6B7A);
+}
+
+.pg-agent-qs {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pg-agent-qs li {
+  position: relative;
+}
+
+/* A question is a button: it chooses the reader and asks it in the chat. */
+.pg-q {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 10px 9px 14px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--ink, #14202E);
+  text-align: left;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--pen) 5%, var(--surface, #fff));
+  border: 1px solid color-mix(in srgb, var(--pen) 24%, var(--rule, #DCE2E8));
+  border-radius: 11px;
+  box-shadow: 0 1px 2px rgba(20, 32, 46, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+/* the agent's colour, as a bar on the left */
+.pg-q::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  background: var(--pen);
+  border-radius: 0 3px 3px 0;
+}
+
+.pg-q-text {
+  flex: 1 1 auto;
+}
+
+.pg-q-go {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-pen);
+  background: color-mix(in srgb, var(--pen) 14%, #fff);
+  border-radius: 50%;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.pg-q:hover:not(:disabled) {
+  background: #fff;
+  border-color: var(--pen);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--pen) 22%, transparent);
+  transform: translateY(-1px);
+}
+
+.pg-q:hover:not(:disabled) .pg-q-go,
+.pg-q:focus-visible .pg-q-go {
+  color: #fff;
+  background: var(--pen);
+  transform: translateX(2px);
+}
+
+.pg-q:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.pg-q:focus-visible {
+  outline: 2px solid var(--pen);
+  outline-offset: 2px;
+}
+
+.pg-q:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.pg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 18px;
+  margin-top: clamp(12px, 2vh, 20px);
+}
+
+.pg-hint {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted, #5E6B7A);
+}
+
+.pg-skip {
+  padding: 8px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--muted, #5E6B7A);
+  cursor: pointer;
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pg-skip:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+@keyframes pg-in {
+  from { opacity: 0; }
+}
+
+@keyframes pg-swap {
+  from { opacity: 0.4; transform: translateY(6px); }
+}
+
+@media (max-width: 1100px) {
+  .pg-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pg-agent-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .pg-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pg-agent-grid { grid-template-columns: 1fr; }
+  .pg-source { flex-wrap: wrap; }
+  .pg-source-link { margin-left: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg, .pg-card, .pg-need, .pg-agents-title, .pg-agent-grid, .pg-q, .pg-q-go, .pg-source-link { animation: none; transition: none; }
+}
+
+/* Keep the current free-form question and chat handoff. */
+/* ---- "Or just ask": the box at the foot of the screen, always in reach */
+.pg-ask {
+  position: sticky;
+  bottom: 0;
+  max-width: 1180px;
+  margin: 22px auto 0;
+  padding: 14px clamp(16px, 2.6vw, 30px) 16px;
+  background: var(--surface, #fff);
+  border-radius: 14px 14px 0 0;
+  box-shadow: 0 0 0 1px var(--rule), 0 -10px 28px rgba(20, 32, 46, 0.07);
+}
+
+.pg-ask-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.pg-ask-row {
+  display: flex;
+  gap: 10px;
+}
+
+.pg-ask-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 14px;
+  font: inherit;
+  font-family: var(--font-agent);
+  font-size: 19px;
+  color: var(--ink);
+  background: var(--paper, #F5F7F9);
+  border: 1px solid var(--field, #C5CED8);
+  border-radius: 10px;
+}
+
+.pg-ask-input:focus-visible {
+  outline: 2px solid var(--accent, var(--sky));
+  outline-offset: 1px;
+  background: var(--surface, #fff);
+}
+
+.pg-ask-go {
+  min-height: 48px;
+  padding: 0 22px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--ink);
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.pg-ask-go:disabled {
+  background: var(--field, #C5CED8);
+  cursor: default;
+}
+
+.pg-ask-go:focus-visible {
+  outline: 2px solid var(--accent, var(--sky));
+  outline-offset: 2px;
+}
+
+.pg-frame.is-leaving {
+  pointer-events: none;
+}
+
+/* ---- the copy of "Ask the data" that flies from the box to the panel (panelCopy): a bare frame, the copied
+   panel brings its own look */
+.pg-fly {
+  position: fixed;
+  z-index: 1001;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 16px;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.pg-fly > .cx-page {
+  min-height: 0;
+}
+
+@media (max-width: 560px) {
+  .pg-ask-input {
+    font-size: 17px;
+  }
+  .pg-ask-go {
+    padding: 0 16px;
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-ask-input, .pg-ask-go { transition: none; }
+}

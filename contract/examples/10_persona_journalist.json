@@ -1,0 +1,42 @@
+{
+  "agent": {
+    "name": "user",
+    "run_id": "user-20261016-0010"
+  },
+  "base_version": 1,
+  "message": "The page for a journalist",
+  "ops": [
+    {
+      "op": "set_context",
+      "persona": "journalist",
+      "period": "2025",
+      "product": "TOTAL",
+      "flow": "BOTH",
+      "start": "2025"
+    },
+    {
+      "op": "upsert_panel",
+      "after": "crossroads",
+      "panel": {
+        "id": "p_routes",
+        "type": "flowmap",
+        "title": "Main partners, bought from and sold to",
+        "queries": [
+          {
+            "key": "main",
+            "endpoint": "/insights/flows",
+            "params": {
+              "period": "$period",
+              "previous": "$previous",
+              "max_items": 10
+            }
+          }
+        ],
+        "options": {
+          "flow": "both",
+          "extent": "europe"
+        }
+      }
+    }
+  ]
+}

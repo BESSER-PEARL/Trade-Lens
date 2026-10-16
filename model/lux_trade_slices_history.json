@@ -1,0 +1,89 @@
+{
+ "description": "One-off top-up of the database with 1999-2014, the years before the 2015 start of the original recipe. Luxembourg reports on its own from 1999; until 1998 it is inside the Belgium-Luxembourg Economic Union figures (reporter BE). Load with --append, then re-register model/lux_trade_slices.json with --register-only so the registry covers 1999-2025 as one range.",
+ "slices": [
+  {
+   "label": "LU partner x HS2, annual (history)",
+   "start": "1999",
+   "end": "2014",
+   "key": {
+    "freq": "A",
+    "reporter": "LU",
+    "partner": "",
+    "product": [
+     "TOTAL",
+     "@level:1"
+    ],
+    "flow": [
+     "1",
+     "2"
+    ],
+    "indicators": "VALUE_IN_EUROS"
+   }
+  },
+  {
+   "label": "LU HS2 vs world, monthly (history)",
+   "start": "1999-01",
+   "end": "2014-12",
+   "key": {
+    "freq": "M",
+    "reporter": "LU",
+    "partner": "WORLD",
+    "product": [
+     "TOTAL",
+     "@level:1"
+    ],
+    "flow": [
+     "1",
+     "2"
+    ],
+    "indicators": "VALUE_IN_EUROS"
+   }
+  },
+  {
+   "label": "EU27 reporters x HS2 vs world, annual (history)",
+   "start": "1999",
+   "end": "2014",
+   "key": {
+    "freq": "A",
+    "reporter": [
+     "AT",
+     "BE",
+     "BG",
+     "CY",
+     "CZ",
+     "DE",
+     "DK",
+     "EE",
+     "ES",
+     "FI",
+     "FR",
+     "GR",
+     "HR",
+     "HU",
+     "IE",
+     "IT",
+     "LT",
+     "LV",
+     "MT",
+     "NL",
+     "PL",
+     "PT",
+     "RO",
+     "SE",
+     "SI",
+     "SK"
+    ],
+    "partner": "WORLD",
+    "product": [
+     "TOTAL",
+     "@level:1"
+    ],
+    "flow": [
+     "1",
+     "2"
+    ],
+    "indicators": "VALUE_IN_EUROS"
+   }
+  }
+ ]
+}

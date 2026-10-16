@@ -1,0 +1,2350 @@
+/* App shell */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+}
+
+/* ------------------------------------------------------------------ page */
+.cx-page {
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background: var(--paper);
+  box-sizing: border-box;
+  padding: 28px clamp(16px, 3vw, 40px) 56px;
+}
+
+.cx-wrap {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.cx-main {
+  flex: 999 1 660px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+}
+
+.cx-header {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.cx-brand {
+  align-self: flex-start;
+  padding: 0;
+  min-height: 44px;
+  font: inherit;
+  font-size: clamp(24px, 2.5vw, 32px);
+  font-weight: 900;
+  font-stretch: 68%;
+  letter-spacing: -0.035em;
+  color: var(--sky-text, #0A6FA3);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.cx-brand:hover:not(:disabled) {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+
+.cx-brand:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+
+.cx-brand:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.cx-titlebar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* The page title leads: condensed and heavy like the figures, larger than any panel title. */
+.cx-title {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 800;
+  font-stretch: 68%;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+
+.cx-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.cx-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.cx-select {
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  padding: 9px 12px;
+  border: 1px solid var(--field);
+  border-radius: 6px;
+  background: var(--surface);
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.cx-btn {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 14px;
+  border: 1px solid var(--field);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  min-height: 44px;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.cx-btn:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.cx-btn:disabled,
+.cx-select:disabled {
+  color: var(--muted);
+  cursor: default;
+  opacity: 0.7;
+}
+
+.cx-select--goods {
+  max-width: 260px;
+}
+
+.cx-btn--ink {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #FFFFFF;
+}
+
+.cx-btn--ink:hover:not(:disabled) {
+  background: #24344A;
+}
+
+.cx-notice {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.cx-notice--error {
+  color: #8E1B12;
+}
+
+/* The agent-written headline: the panel renders its text, the page gives it the voice. */
+.cx-headline {
+  font-family: var(--font-agent);
+  font-size: clamp(24px, 2.4vw, 31px);
+  line-height: 1.3;
+  max-width: 34em;
+}
+
+/* A quiet note under a section: a caveat, never a headline. */
+.cx-quiet {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 62em;
+}
+
+.cx-cross-head {
+  margin-top: 8px;
+}
+
+/* Rows of bars and dots are buttons: clicking one highlights it as the person's own mark. */
+.cx-row {
+  border-radius: 4px;
+}
+
+.cx-row:hover .cx-row-name,
+.cx-row:focus-visible .cx-row-name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cx-row:focus-visible,
+.cx-dot:focus-visible,
+.cx-tr:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 3px;
+}
+
+.cx-dot {
+  transition: transform 120ms ease;
+}
+
+.cx-dot:hover {
+  transform: scale(1.35);
+}
+
+.cx-tr:hover td {
+  background: #EEF2F5;
+}
+
+/* A mark brought into view from the chat or a note flashes in its agent's pen. */
+@keyframes cx-flash-panel {
+  0% { outline-color: var(--flash, var(--ink)); }
+  70% { outline-color: var(--flash, var(--ink)); }
+  100% { outline-color: transparent; }
+}
+
+.cx-flash-panel {
+  outline: 3px solid transparent;
+  outline-offset: 8px;
+  border-radius: 6px;
+  animation: cx-flash-panel 2s ease-out;
+}
+
+@keyframes cx-flash-mark {
+  0%, 40%, 80% { opacity: 1; }
+  20%, 60% { opacity: 0.25; }
+  100% { opacity: 1; }
+}
+
+.cx-flash-mark {
+  animation: cx-flash-mark 1.6s ease-in-out;
+}
+
+.cx-loading {
+  margin: 0;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+/* Figures and the crossroads belong together, so no rule between them. */
+.cx-crossroads {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cx-figures {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: end;
+}
+
+.cx-figures > :nth-child(2) {
+  text-align: center;
+  justify-self: center;
+}
+
+.cx-figures > :nth-child(3) {
+  text-align: right;
+  justify-self: end;
+}
+
+.cx-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 28px;
+  border-top: 2px solid var(--ink);
+  min-width: 0;
+}
+
+.cx-section-label {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.cx-section-intro {
+  margin: -4px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 62em;
+}
+
+.cx-three {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 32px;
+  padding-top: 28px;
+  border-top: 2px solid var(--ink);
+}
+
+.cx-three > * {
+  min-width: 0;
+}
+
+/* The seasonal note under the EU rank strip, as quiet as the panel captions above it. */
+.cx-season {
+  margin-top: 10px;
+  line-height: 1.45;
+}
+
+/* "More for this view": the baseline panels a reader does not need, folded, never removed. */
+.cx-more {
+  border-top: 2px solid var(--ink);
+  padding-top: 18px;
+}
+
+.cx-more > summary {
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cx-more > summary::marker {
+  color: var(--muted);
+}
+
+.cx-more > .cx-quiet {
+  margin-bottom: 20px;
+}
+
+.cx-more-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 32px;
+}
+
+.cx-more-grid > * {
+  min-width: 0;
+}
+
+.cx-select--persona {
+  max-width: 200px;
+}
+
+/* A reader's profile may ask for larger text and more contrast (the citizen: 20 px, high
+   contrast). The page column scales as a whole, so the charts keep their proportions. */
+.cx-page .cx-main {
+  zoom: var(--reading-zoom, 1);
+}
+
+.cx-page[data-contrast="high"] {
+  --muted: #3B4858;
+  --ink-2: #1E2B3A;
+  --rule: #B9C3CE;
+  --field: #8E9BAA;
+}
+
+.cx-page[data-contrast="high"] .cx-headline {
+  line-height: 1.45;
+}
+
+.cx-footer {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 62em;
+}
+
+.cx-footer p {
+  margin: 0;
+}
+
+.cx-footer p + p {
+  margin-top: 6px;
+}
+
+.cx-footer a {
+  color: var(--sky-text);
+}
+
+@media (max-width: 600px) {
+  /* Bought and sold side by side, the balance under them. */
+  .cx-figures {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "imp exp" "bal bal";
+    gap: 18px 12px;
+    /* the two figures share a top line; a caption that wraps to two lines runs on below */
+    align-items: start;
+  }
+
+  .cx-figures > :nth-child(1) { grid-area: imp; }
+  .cx-figures > :nth-child(2) { grid-area: bal; }
+  .cx-figures > :nth-child(3) { grid-area: exp; }
+
+  .cx-figures [role="group"] {
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  .cx-figures > :nth-child(3) [role="group"] {
+    align-items: flex-end !important;
+    text-align: right !important;
+  }
+
+  .cx-controls,
+  .cx-field {
+    width: 100%;
+  }
+
+  /* Reading as takes its own row; the page actions share the next. */
+  .cx-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cx-controls > .cx-field:nth-child(-n + 2) {
+    grid-column: 1 / -1;
+  }
+
+  .cx-field .cx-select {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .cx-figures > :nth-child(2) {
+    text-align: left;
+    justify-self: start;
+  }
+
+  .cx-figures > :nth-child(3) {
+    justify-self: end;
+  }
+
+  .cx-titlebar {
+    align-items: flex-start;
+  }
+}
+
+/* ---------------------------------------------------------- Ask the data */
+.ask {
+  flex: 1 1 380px;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: 0 0 0 1px var(--rule), 0 12px 32px rgba(20, 32, 46, 0.08);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-ui);
+  color: var(--ink);
+}
+
+/* Docked and sticky only when it sits beside the page. */
+@media (min-width: 1140px) {
+  /* The whole panel scrolls; the question box stays at its foot. */
+  .ask {
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  .ask-foot {
+    position: sticky;
+    bottom: 0;
+    background: var(--surface);
+    border-radius: 0 0 16px 16px;
+  }
+
+  /* The chips wrap (never cut off at the panel's edge); the foot grows by a row when it must. */
+  .ask .ask-chips {
+    flex-wrap: wrap;
+  }
+
+  .ask-chip {
+    flex: 0 1 auto;
+  }
+}
+
+.ask-head {
+  padding: 22px 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.ask-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.ask-intro {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* "Answers for: Journalist": the reader the agents answer for (contract 1.4). */
+.ask-for {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+}
+
+.ask-for-tag {
+  flex-basis: 100%;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Readers who do not use API calls (journalist, citizen...) do not see them on the notes; the spec keeps them. */
+.cx-page[data-hide~="api_urls"] .ask-sources {
+  display: none;
+}
+
+.ask-agents {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ask-agent {
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--pen, var(--ink));
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ask-agent-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--agent-ink, var(--ink));
+}
+
+.ask-swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--pen-fill, var(--pen, var(--ink)));
+}
+
+.ask-agent-can {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+/* The agent at work (a mode_change from the agent): its card lights up in its pen. */
+.ask-agent {
+  transition: background-color 200ms ease, box-shadow 200ms ease;
+}
+
+.ask-agent--active {
+  background: color-mix(in srgb, var(--pen) 7%, #FFFFFF);
+  box-shadow: inset 0 0 0 1.5px var(--pen);
+}
+
+.ask-agent-working {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--agent-ink, var(--ink));
+}
+
+@keyframes ask-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.7); }
+}
+
+.ask-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pen-fill, var(--pen));
+  animation: ask-pulse 1.2s ease-in-out infinite;
+}
+
+.ask-agent-state {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ask-agent--off {
+  border-top-color: var(--rule);
+}
+
+.ask-agent--off .ask-swatch {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--pen, var(--ink));
+}
+
+.ask-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.ask-log {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.ask-empty {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.ask-q {
+  margin: 0;
+  align-self: flex-end;
+  max-width: 85%;
+  background: var(--ink);
+  color: #FFFFFF;
+  padding: 11px 14px;
+  border-radius: 12px 12px 3px 12px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+/* A reply sits under its agent's name and pen, like the notes. */
+.ask-reply {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 14px;
+  border-left: 3px solid var(--pen, var(--ink));
+}
+
+.ask-reply-who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--agent-ink, var(--ink));
+}
+
+.ask-reply-text {
+  font-family: var(--font-agent);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.ask-reply-text .ask-reply-h {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ask-reply-text em {
+  font-style: italic;
+}
+
+/* "[2]" in a reply: the numbered circle of that mark, in its agent's pen. */
+.ask-ref {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 999px;
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  vertical-align: 2px;
+  margin: 0 1px;
+  cursor: pointer;
+}
+
+.ask-ref:hover {
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--ink);
+}
+
+.ask-ref:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
+.ask-code-link code {
+  color: var(--sky-text);
+}
+
+.ask-reply-text p,
+.ask-reply-text ul,
+.ask-reply-text ol {
+  margin: 0;
+}
+
+.ask-reply-text > * + * {
+  margin-top: 8px;
+}
+
+.ask-reply-text ul,
+.ask-reply-text ol {
+  padding-left: 20px;
+}
+
+.ask-reply-text ul {
+  list-style: disc;
+}
+
+.ask-reply-text ol {
+  list-style: decimal;
+}
+
+/* A sentence to quote as is: the agent's voice, set off by the ink rule. */
+.ask-reply-text .ask-quote {
+  margin: 0;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--ink);
+  font-style: italic;
+  color: var(--ink);
+}
+
+.ask-reply-text code {
+  font-size: 0.78em;
+  overflow-wrap: anywhere;
+}
+
+.ask-reply a,
+.ask-note a {
+  color: var(--sky-text);
+}
+
+.ask-reply-more {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.ask-thinking {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.ask-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.ask-notes-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ask-log-label {
+  padding-top: 18px;
+  border-top: 1px solid var(--rule-soft);
+}
+
+.ask-notes-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ask-clear {
+  font-size: 13px;
+  padding: 6px 12px;
+  min-height: 36px;
+}
+
+.ask-note--off .ask-note-text,
+.ask-note--off .ask-note-list {
+  opacity: 0.62;
+}
+
+.ask-error {
+  margin: 0;
+  font-size: 13px;
+  color: #8E1B12;
+}
+
+.ask-note {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 14px;
+  border-left: 3px solid var(--pen, var(--ink));
+}
+
+.ask-note-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--agent-ink, var(--ink));
+}
+
+.ask-n {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--pen-fill, var(--pen, var(--ink)));
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ask-n--btn {
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.ask-n--btn:hover {
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--pen, var(--ink));
+}
+
+.ask-kept {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.ask-note-text {
+  margin: 0;
+  font-family: var(--font-agent);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.ask-note-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: var(--font-agent);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.ask-note-list strong {
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.ask-drawn {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--agent-ink, var(--ink));
+}
+
+.ask-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ask-actions .cx-btn {
+  font-size: 13px;
+  padding: 7px 12px;
+}
+
+.ask-sources {
+  font-size: 13px;
+  color: var(--ink-2);
+  width: 100%;
+}
+
+.ask-changes {
+  font-size: 13px;
+  color: var(--ink-2);
+  padding-top: 10px;
+  border-top: 1px solid var(--rule-soft);
+}
+
+.ask-changes summary,
+.ask-sources summary {
+  cursor: pointer;
+  color: var(--sky-text);
+  font-weight: 600;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 2px;
+}
+
+.ask-sources ul {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ask-sources a {
+  display: inline-block;
+  padding: 2px 0;
+  font-family: ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sky-text);
+  word-break: break-all;
+}
+
+.ask-sources .ask-source-label {
+  display: block;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.ask-foot {
+  padding: 16px 24px 22px;
+  border-top: 1px solid var(--rule-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ask-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ask-chip {
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 14px;
+  border: 1px solid var(--field);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 44px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ask-chip:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.ask-chip:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+/* The question an agent suggests next. */
+.ask-chip--next {
+  align-self: flex-start;
+  background: var(--surface);
+  border-color: var(--ink);
+  font-weight: 600;
+}
+
+.ask-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.ask-form label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.ask-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.ask-input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 14.5px;
+  padding: 10px 12px;
+  border: 1px solid var(--field);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--surface);
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.ask-send {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #FFFFFF;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.ask-send:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.ask-status {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.ask-status > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ask-status-error {
+  color: #8E1B12;
+}
+
+.ask-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.ask-dot--wait {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--muted);
+}
+
+.ask-dot--off {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px #8E1B12;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 600px) {
+  .ask-agent-can,
+  .ask-agent-working {
+    font-size: 14px;
+  }
+
+  .ask-agent-name {
+    font-size: 15px;
+  }
+
+  .ask-intro,
+  .ask-status {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .ask-head,
+  .ask-body,
+  .ask-foot {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .ask-agents {
+    gap: 6px;
+  }
+
+  .ask-agent {
+    padding: 10px;
+  }
+}
+
+.cx-linkbtn {
+  margin-left: 8px;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sky-text);
+  cursor: pointer;
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cx-linkbtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* A chart an agent just drew: the page scrolls to it, and it glows once. */
+.cx-agent-panel {
+  scroll-margin-top: 24px;
+}
+
+.cx-agent-panel.is-new {
+  animation: cx-new 2.4s ease-out;
+}
+
+@keyframes cx-new {
+  0% { box-shadow: 0 0 0 3px var(--sky); background: color-mix(in srgb, var(--sky) 10%, transparent); }
+  100% { box-shadow: 0 0 0 3px transparent; background: transparent; }
+}
+
+/* The question a chart answers, as the heading of its entry: what the reader asked, in their own words. */
+.cx-asked {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.cx-asked-label {
+  margin-right: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-agent-panel.is-new { animation: none; }
+}
+
+.ask-input:disabled {
+  color: var(--muted);
+  background: var(--paper);
+  cursor: progress;
+}
+
+.ask-chip:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.cx-more-about {
+  margin-top: 4px;
+}
+
+.cx-more-about-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 2px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sky-text);
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+
+.cx-more-about-btn:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cx-more-about-body {
+  display: grid;
+  gap: 12px;
+  max-width: 40em;
+  margin-top: 6px;
+  padding: 4px 0 4px 14px;
+  font-family: var(--font-agent);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink);
+  border-left: 3px solid var(--rule);
+}
+
+.cx-more-about-body p {
+  margin: 0 0 8px;
+}
+
+.cx-more-about-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------------------------------------------------------- Keep (pin) and Remove, in a panel's header */
+.cx-pctl {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 4px;
+  font-family: var(--font-ui);
+}
+
+.cx-pctl-btn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.cx-pctl-btn:hover:not(:disabled) {
+  border-color: var(--field);
+  color: var(--ink);
+}
+
+.cx-pctl-btn--on {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.cx-pctl-btn:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.cx-pctl-error {
+  flex-basis: 100%;
+  font-size: 12px;
+  color: #B5101F;
+}
+
+.cx-pctl-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -6px;
+}
+
+.cx-adjust-toggle {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--field);
+  border-radius: 8px;
+  font-family: var(--font-ui);
+}
+
+.cx-adjust-btn {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.cx-adjust-btn--on {
+  background: var(--field);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.cx-adjust-btn:hover:not(.cx-adjust-btn--on) {
+  color: var(--ink);
+}
+
+.cx-adjust-btn:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
+/* On a phone the pin is an icon; its words stay in the title and for screen readers. */
+@media (max-width: 600px) {
+  .cx-pctl-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .cx-pctl-btn {
+    min-height: 40px;
+    min-width: 40px;
+    justify-content: center;
+  }
+
+  .cx-pctl-short {
+    display: inline;
+  }
+}
+
+@media (min-width: 601px) {
+  .cx-pctl-short {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------- A chart's own year and goods (contract 1.5)
+   One quiet line under a chart's title ("2025, all goods"): a text button, no border and no box, in the
+   subtitle's colour and size, underlined on hover and focus. A small dot when the chart has its own
+   setting. Clicking it opens a row of selects under it, in the flow (nothing floats over the chart). */
+/* A chart's heading: title and subtitle on the left, the controls fixed at the top right, the quiet line under. */
+.cx-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 24px;
+  row-gap: 6px;
+  align-items: start;
+}
+
+.cx-heading-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cx-heading-sub {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.cx-heading-aside {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 1px;
+  font-size: 14px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.cx-heading-meta {
+  grid-column: 1 / -1;
+  margin-top: -2px;
+}
+
+/* On a phone the controls take their own line under the title, still on the right. */
+@media (max-width: 600px) {
+  .cx-heading {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cx-heading-aside {
+    grid-column: 1;
+    grid-row: auto;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+}
+
+.cx-ctxmenu {
+  display: block;
+  font-family: var(--font-ui);
+}
+
+.cx-ctxmenu-btn {
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-radius: 3px;
+  padding: 2px 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cx-ctxmenu-btn:hover:not(:disabled),
+.cx-ctxmenu-btn:focus-visible,
+.cx-ctxmenu.is-open .cx-ctxmenu-btn {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cx-ctxmenu-btn:focus-visible {
+  outline: 2px solid var(--sky-text);
+  outline-offset: 2px;
+}
+
+.cx-ctxmenu-btn:disabled {
+  cursor: default;
+}
+
+.cx-ctxmenu-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-2);
+  flex: none;
+}
+
+.cx-ctxmenu-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--surface);
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.cx-ctxmenu-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+  min-width: 0;
+}
+
+.cx-ctxmenu-select {
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  padding: 4px 8px;
+  border: 1px solid var(--field);
+  border-radius: 6px;
+  background: var(--surface);
+  min-height: 34px;
+  min-width: 0;
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.cx-ctxmenu-select--goods {
+  max-width: 240px;
+}
+
+.cx-ctxmenu-select:disabled {
+  color: var(--muted);
+  cursor: default;
+  opacity: 0.7;
+}
+
+.cx-ctxmenu .cx-ctxmenu-follow {
+  margin-left: 0;
+  min-height: 34px;
+}
+
+.cx-ctxmenu--figures {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 600px) {
+  /* a 44 px tap target that takes no more room than the line */
+  .cx-ctxmenu-btn {
+    min-height: 44px;
+    margin: -10px 0;
+  }
+
+  .cx-ctxmenu-row {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .cx-ctxmenu-field {
+    flex: 1 1 130px;
+  }
+
+  .cx-ctxmenu-field--goods {
+    flex-basis: 100%;
+  }
+
+  .cx-ctxmenu-select {
+    flex: 1;
+    min-height: 44px;
+  }
+
+  .cx-ctxmenu-select--goods {
+    max-width: none;
+  }
+
+  .cx-ctxmenu .cx-ctxmenu-follow {
+    min-height: 44px;
+  }
+}
+
+/* ---------------------------------------------------------- The compact row of the agents
+   Shown while the agent cards are out of sight. Beside the page (the panel scrolls on its own) it
+   sticks to the top of the panel; on narrower screens the panel is below the page, so it is fixed to
+   the top of the window. It takes no room in the panel: a sticky anchor of height 0. */
+.ask-bar {
+  position: sticky;
+  top: 0;
+  height: 0;
+  z-index: 6;
+}
+
+.ask-bar-inner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 25;
+  box-sizing: border-box;
+  padding: 6px 16px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 1px 0 var(--rule), 0 6px 16px rgba(20, 32, 46, 0.06);
+  opacity: 0;
+  transform: translateY(-6px);
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease, visibility 0s linear 160ms;
+}
+
+.ask-bar--on .ask-bar-inner {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+@media (min-width: 1140px) {
+  .ask-bar-inner {
+    position: absolute;
+    border-radius: 16px 16px 0 0;
+    padding: 8px 14px;
+  }
+}
+
+.ask-bar-row {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 1400px;
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.ask-bar-row > li {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.ask-bar-agent {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--agent-ink, var(--ink));
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 200ms ease, border-color 200ms ease;
+}
+
+.ask-bar-agent:hover {
+  border-color: var(--rule);
+}
+
+.ask-bar-agent[aria-expanded="true"] {
+  border-color: var(--pen);
+}
+
+.ask-bar-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--pen-fill, var(--pen));
+}
+
+.ask-bar-agent--on {
+  background: color-mix(in srgb, var(--pen) 12%, #FFFFFF);
+  border-color: var(--pen);
+}
+
+.ask-bar-agent--on .ask-bar-dot {
+  animation: ask-pulse 1.2s ease-in-out infinite;
+}
+
+.ask-bar-agent--off {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.ask-bar-agent--off .ask-bar-dot {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--pen);
+}
+
+.ask-bar-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.ask-bar-can {
+  margin: 6px auto 2px;
+  max-width: 1400px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.ask-bar-can strong {
+  color: var(--agent-ink, var(--ink));
+}
+
+.ask-bar-ask {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ask-bar-agent--on .ask-bar-dot {
+    animation: none;
+  }
+
+  .ask-bar-inner {
+    transition: none;
+  }
+}
+
+/* Below the docked width the row is fixed to the top of the window: the page keeps room for it. */
+@media (max-width: 1139px) {
+  .cx-page:has(.ask-bar) {
+    padding-top: 64px;
+  }
+}
+
+/* ---------------------------------------------------------- "How this was made"
+   The card under a chart (or a note), in plain rows; the exact queries one fold deeper. Paper on a
+   rule, Archivo for the rows, the method's name in ink 600; a pen colour only for the agent's name. */
+.cx-made-toggle .cx-made-toggle-label {
+  white-space: nowrap;
+}
+
+.cx-figs-foot {
+  display: flex;
+  justify-content: center;
+  margin-top: -6px;
+}
+
+.cx-made {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 62em;
+  padding: 14px 16px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--surface);
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  font-stretch: 100%;
+  box-sizing: border-box;
+  container-type: inline-size;
+}
+
+/* In a narrow place (a column of the row of three, the Ask panel, a phone) the rows stack. */
+@container (max-width: 520px) {
+  .cx-made .cx-made-rows {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px 0;
+  }
+
+  .cx-made .cx-made-rows dt {
+    margin-top: 8px;
+  }
+
+  .cx-made .cx-made-rows dt:first-child {
+    margin-top: 0;
+  }
+}
+
+.cx-made-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.cx-made-title h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.cx-made-close {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 8px;
+  min-height: 32px;
+  cursor: pointer;
+}
+
+.cx-made-close:hover {
+  border-color: var(--field);
+  color: var(--ink);
+}
+
+.cx-made-rows {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap: 8px 16px;
+  margin: 0;
+}
+
+.cx-made-rows dt {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.cx-made-rows dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cx-made-rows b {
+  font-weight: 600;
+}
+
+.cx-made-method {
+  display: block;
+}
+
+.cx-made-method + .cx-made-method {
+  margin-top: 4px;
+}
+
+.cx-made-sq {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+
+.cx-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  padding: 0 7px;
+  border-radius: 4px;
+  margin-right: 6px;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+.cx-badge--calc {
+  background: #E9EDF1;
+  color: var(--ink-2);
+}
+
+.cx-badge--none {
+  background: #EEF1F4;
+  color: var(--muted);
+}
+
+.cx-made-detail {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.cx-made-detail > summary {
+  cursor: pointer;
+  color: var(--sky-text);
+  font-weight: 600;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cx-made-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.cx-made-tech {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.cx-made-queries {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cx-made-query {
+  font-size: 12.5px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.cx-made-query code {
+  font-size: 12px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.cx-made-params {
+  color: var(--ink-2);
+}
+
+.cx-made-pk {
+  color: var(--muted);
+}
+
+.cx-made-query a {
+  color: var(--sky-text);
+  white-space: nowrap;
+}
+
+.cx-made-guard {
+  color: var(--muted);
+}
+
+.cx-made--note {
+  margin-top: 2px;
+}
+
+@media (max-width: 560px) {
+  .cx-made {
+    padding: 12px 12px;
+  }
+
+  .cx-made-rows {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px 0;
+  }
+
+  .cx-made-rows dt {
+    margin-top: 8px;
+  }
+
+  .cx-made-rows dt:first-child {
+    margin-top: 0;
+  }
+
+}
+
+/* On a phone a chart's controls take their own line under the subtitle, so nothing wraps inside a button. */
+@media (max-width: 600px) {
+  span:has(> .cx-pctl) {
+    flex-wrap: wrap;
+  }
+
+  span:has(> .cx-pctl) > .cx-pctl {
+    flex-basis: 100%;
+    margin-left: -8px;
+  }
+}
+
+/* The note's "How this was made" in the Ask panel: a quiet link-button, a 44 px tap target. */
+.ask-made-btn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sky-text);
+  background: none;
+  border: 0;
+  padding: 0 2px;
+  min-height: 44px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ask-made-btn:hover,
+.ask-made-btn.is-open {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------------------------------------------------------- Clear the page, back to the starting page */
+.cx-pageactions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 4px;
+  font-family: var(--font-ui);
+}
+
+.cx-pageactions-ask {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-right: 4px;
+}
+
+.cx-pctl-btn--danger {
+  color: #B5101F;
+  border-color: #E8B4BB;
+  font-weight: 600;
+}
+
+.cx-pctl-btn--danger:hover:not(:disabled) {
+  border-color: #B5101F;
+  color: #B5101F;
+}
+
+@media (max-width: 760px) {
+  .cx-controls > .cx-pageactions {
+    grid-column: 1 / -1;
+  }
+}
+
+.cx-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 28px 0 8px;
+  border-top: 2px solid var(--ink);
+}
+
+.cx-empty p {
+  margin: 0;
+  max-width: 34em;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* "What happened" under an agent's reply: the decision record, in the card's own rows. */
+.ask-reply .ask-made-btn {
+  display: block;
+  margin-top: 2px;
+}
+
+.ask-happened {
+  margin-top: 4px;
+}
+
+.ask-happened-summary {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.ask-happened-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.ask-happened-list li + li {
+  margin-top: 4px;
+}
+
+/* ---------------------------------------------------------- "Model card" (ModelCard.tsx)
+   How a forecast was made, for the machine-learning reader: the "How this was made" card's rows,
+   plus small numeric tables (tabular figures, right-aligned) that scroll on their own if a phone
+   is too narrow, never the page. */
+.cx-model .cx-model-rows {
+  grid-template-columns: 132px minmax(0, 1fr);
+}
+
+.cx-model-list {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  list-style: disc;
+}
+
+.cx-model-list li + li {
+  margin-top: 2px;
+}
+
+/* The features: two columns where the card is wide. */
+@container (min-width: 760px) {
+  .cx-model-list:not(.cx-model-limits) {
+    columns: 2;
+    column-gap: 28px;
+  }
+
+  .cx-model-list:not(.cx-model-limits) li {
+    break-inside: avoid;
+  }
+}
+
+.cx-model-limits li + li {
+  margin-top: 6px;
+}
+
+.cx-model-tech,
+.cx-model-note {
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+
+.cx-model-tablewrap {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 6px 0 8px;
+}
+
+.cx-model-table {
+  width: 100%;
+  max-width: 36em;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: normal;
+}
+
+.cx-model-table caption {
+  caption-side: top;
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink);
+  padding-bottom: 4px;
+}
+
+.cx-model-table th,
+.cx-model-table td {
+  padding: 3px 10px 3px 0;
+  border-bottom: 1px solid var(--rule);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cx-model-table thead th {
+  color: var(--muted);
+  font-weight: 600;
+  vertical-align: bottom;
+  white-space: normal;
+}
+
+.cx-model-table th:first-child {
+  text-align: left;
+  font-weight: 500;
+}
+
+.cx-model-table thead th:first-child {
+  font-weight: 600;
+}
+
+.cx-model-table--wide tbody th {
+  white-space: normal;
+  min-width: 12em;
+}
+
+.cx-model-skill {
+  font-weight: 600;
+}
+
+.cx-model-chosen th,
+.cx-model-chosen td {
+  font-weight: 600;
+}
+
+.cx-model-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--ink-2);
+}
+
+.cx-model-spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--rule);
+  border-top-color: var(--ink-2);
+  animation: cx-model-spin 0.9s linear infinite;
+}
+
+@keyframes cx-model-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-model-spinner {
+    animation: none;
+  }
+}
+
+@container (max-width: 520px) {
+  .cx-model .cx-model-rows {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cx-model-table--wide tbody th {
+    min-width: 8em;
+  }
+}
+
+@media (max-width: 560px) {
+  .cx-model .cx-model-rows {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------------------------------------------------------- the header: who the page is for, then the page's tools
+   The reader is one button in the reader's own colour (as on the landing); the tools sit on a quiet line under the
+   title, Export at its end. */
+.cx-titlebar {
+  align-items: flex-start;
+}
+
+.cx-titlebar .cx-reader {
+  margin-left: auto;
+}
+
+.cx-reader {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-height: 48px;
+  padding: 7px 14px 7px 16px;
+  font: inherit;
+  font-family: var(--font-ui);
+  text-align: left;
+  color: var(--ink);
+  background: var(--surface);
+  border: 0;
+  border-radius: 10px;
+  box-shadow: inset 4px 0 0 var(--accent), 0 0 0 1px var(--rule);
+  cursor: pointer;
+  transition: box-shadow 0.12s ease;
+}
+
+.cx-reader:hover:not(:disabled) {
+  box-shadow: inset 4px 0 0 var(--accent), 0 0 0 1px var(--accent);
+}
+
+.cx-reader:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.cx-reader:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.cx-reader-name {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.cx-reader-change {
+  font-size: 13px;
+  color: var(--sky-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cx-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-reader {
+    transition: none;
+  }
+}
+
+/* The cause finder's output is a hypothesis: dates that line up, not proof of cause. */
+.ai-hypothesis {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid #6d4bc4;
+  background: #f3effc;
+  color: #4b2f97;
+  font-family: var(--font-ui, inherit);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* The header: the brand and the reader on one line, the page's tools under them. */
+.cx-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 14px;
+}
+
+.cx-header > * {
+  grid-column: 1 / -1;
+}
+
+.cx-header > .cx-brand {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+}
+
+.cx-header > .cx-titlebar {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* Thin, quiet scroll bars (the chat, tables), without the system's arrow buttons. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(15, 23, 42, 0.25) transparent;
+}

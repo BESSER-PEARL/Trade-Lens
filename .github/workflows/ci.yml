@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: MIT
+# BESSER v8.1.0 + patches/besser/, the offline tests, generation into build/generated, and the app's frontend.
+# app/ was generated at cea06c4 and is maintained by hand since, so CI no longer compares it with the models.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Python tests (BESSER v8.1.0 + our patches)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            patches/besser/*.patch
+      - name: Vendor BESSER v8.1.0 and apply our patches
+        run: |
+          git clone --depth 1 --branch v8.1.0 https://github.com/BESSER-PEARL/BESSER.git vendor/BESSER
+          for p in patches/besser/*.patch; do git -C vendor/BESSER apply "../../$p"; done
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e vendor/BESSER
+          pip install -r requirements.txt
+      - name: Tests (offline, no database needed)
+        # Includes tests/test_generate.py: the models still generate an app (into a scratch folder).
+        run: python -m pytest -q
+      - name: The models still generate into build/generated
+        # app/ is maintained by hand since cea06c4, so this only checks that generation runs.
+        run: |
+          python generate.py
+          test -f build/generated/backend/main_api.py
+          test -f build/generated/frontend/package.json
+
+  frontend:
+    name: The app's frontend type-checks and builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: app/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: app/frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npx tsc --noEmit
+      - run: npx vite build
+

@@ -1,0 +1,181 @@
+{
+  "spec_version": "1.0",
+  "version": 0,
+  "title": "Luxembourg's trade in goods",
+  "updated_by": "baseline",
+  "next_mark_n": 1,
+  "panels": [
+    {
+      "id": "headline",
+      "type": "text",
+      "title": "In short",
+      "text": "In {year} Luxembourg bought {imports} of {goods} from abroad and sold {exports}, a balance of {balance}.",
+      "queries": [
+        {"key": "imports", "endpoint": "/insights/ladder", "params": {"by": "partner", "period": "$period", "flow": "IMPORT", "product": "$product"}, "tone": "imports"},
+        {"key": "exports", "endpoint": "/insights/ladder", "params": {"by": "partner", "period": "$period", "flow": "EXPORT", "product": "$product"}, "tone": "exports"}
+      ],
+      "facts": {
+        "year": {"query": "imports", "path": "period", "format": "period"},
+        "imports": {"query": "imports", "path": "total", "format": "eur"},
+        "exports": {"query": "exports", "path": "total", "format": "eur"},
+        "balance": {"op": "diff", "of": ["exports", "imports"], "format": "eur_signed"},
+        "goods": {"endpoint": "/trends/analyze", "params": {"flow": "EXPORT", "freq": "M", "product": "$product", "penalty": 1.5, "min_size": 12}, "path": "goods", "format": "text"}
+      },
+      "pinned": false,
+      "agent": "baseline",
+      "provenance": {
+        "agent": "baseline",
+        "created_at": "2026-10-14T12:00:00Z",
+        "sources": [
+          {"url": "/insights/ladder?by=partner&period=$period&flow=IMPORT&product=$product", "label": "Imports by partner"},
+          {"url": "/insights/ladder?by=partner&period=$period&flow=EXPORT&product=$product", "label": "Exports by partner"}
+        ]
+      }
+    },
+    {
+      "id": "kpi_imports",
+      "type": "kpi",
+      "title": "Bought",
+      "value": "total",
+      "text": "bought from {partners} partners",
+      "queries": [
+        {"key": "imports", "endpoint": "/insights/ladder", "params": {"by": "partner", "period": "$period", "flow": "IMPORT", "product": "$product"}, "tone": "imports"}
+      ],
+      "facts": {
+        "total": {"query": "imports", "path": "total", "format": "eur"},
+        "partners": {"query": "imports", "path": "n_items", "format": "int"}
+      },
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "kpi_balance",
+      "type": "kpi",
+      "title": "Balance",
+      "value": "balance",
+      "text": "balance",
+      "queries": [
+        {"key": "imports", "endpoint": "/insights/ladder", "params": {"by": "partner", "period": "$period", "flow": "IMPORT", "product": "$product"}, "tone": "imports"},
+        {"key": "exports", "endpoint": "/insights/ladder", "params": {"by": "partner", "period": "$period", "flow": "EXPORT", "product": "$product"}, "tone": "exports"}
+      ],
+      "facts": {
+        "imports": {"query": "imports", "path": "total", "format": "eur"},
+        "exports": {"query": "exports", "path": "total", "format": "eur"},
+        "balance": {"op": "diff", "of": ["exports", "imports"], "format": "eur_signed"}
+      },
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "kpi_exports",
+      "type": "kpi",
+      "title": "Sold",
+      "value": "total",
+      "text": "sold to {partners} partners",
+      "queries": [
+        {"key": "exports", "endpoint": "/insights/ladder", "params": {"by": "partner", "period": "$period", "flow": "EXPORT", "product": "$product"}, "tone": "exports"}
+      ],
+      "facts": {
+        "total": {"query": "exports", "path": "total", "format": "eur"},
+        "partners": {"query": "exports", "path": "n_items", "format": "int"}
+      },
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "crossroads",
+      "type": "flow",
+      "title": "Where the goods come from and where they go",
+      "subtitle": "Where imports come from and where exports go",
+      "text": "{gap} more bought than sold",
+      "queries": [
+        {"key": "in", "label": "Bought from", "endpoint": "/insights/ranking", "params": {"by": "partner", "period": "$period", "flow": "IMPORT", "max_items": 8, "product": "$product"}, "tone": "imports"},
+        {"key": "out", "label": "Sold to", "endpoint": "/insights/ranking", "params": {"by": "partner", "period": "$period", "flow": "EXPORT", "max_items": 8, "product": "$product"}, "tone": "exports"}
+      ],
+      "facts": {
+        "bought": {"query": "in", "path": "total", "format": "eur"},
+        "sold": {"query": "out", "path": "total", "format": "eur"},
+        "gap": {"op": "diff", "of": ["bought", "sold"], "format": "eur"}
+      },
+      "options": {"center_label": "Luxembourg", "show_gap": true},
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "trend",
+      "type": "line",
+      "title": "Imports have been larger than exports every year since 1999",
+      "subtitle": "Yearly, nominal euros",
+      "queries": [
+        {"key": "imports", "label": "Imports", "endpoint": "/insights/series", "params": {"flow": "IMPORT", "freq": "A", "start": "1999", "product": "$product"}, "tone": "imports"},
+        {"key": "exports", "label": "Exports", "endpoint": "/insights/series", "params": {"flow": "EXPORT", "freq": "A", "start": "1999", "product": "$product"}, "tone": "exports"}
+      ],
+      "options": {"x": "period", "y": "value", "format": "eur", "gap_fill": true},
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "mix_export",
+      "type": "bar",
+      "title": "What Luxembourg sells",
+      "text": "{chapters} chapters of {floor} or more cover {coverage} of exports in {year}.",
+      "queries": [
+        {"key": "main", "endpoint": "/insights/ranking/records", "params": {"by": "product", "period": "$period", "flow": "EXPORT", "max_items": 5}, "tone": "exports"},
+        {"key": "ladder", "endpoint": "/insights/ladder", "params": {"by": "product", "period": "$period", "flow": "EXPORT"}}
+      ],
+      "facts": {
+        "chapters": {"query": "ladder", "path": "ladder.1.items", "format": "int"},
+        "floor": {"query": "ladder", "path": "ladder.1.threshold", "format": "pct"},
+        "coverage": {"query": "ladder", "path": "ladder.1.coverage", "format": "pct"},
+        "year": {"query": "ladder", "path": "period", "format": "period"}
+      },
+      "options": {"x": "name", "y": "share", "format": "percent", "orientation": "horizontal", "limit": 5, "exclude_codes": ["OTHER"]},
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "specialisation",
+      "type": "bar",
+      "title": "Where it stands out",
+      "text": "Revealed comparative advantage against {peers} EU peers. The grey tick is 1, the peers' own weight.",
+      "queries": [
+        {"key": "main", "endpoint": "/insights/specialisation/records", "params": {"by": "product", "period": "$period", "flow": "EXPORT", "limit": 3}, "tone": "exports"},
+        {"key": "detail", "endpoint": "/insights/specialisation", "params": {"by": "product", "period": "$period", "flow": "EXPORT"}}
+      ],
+      "facts": {
+        "peers": {"query": "detail", "path": "peers.#length", "format": "int"}
+      },
+      "options": {"x": "name", "y": "rca", "format": "number", "orientation": "horizontal", "reference": 1},
+      "pinned": false,
+      "agent": "baseline"
+    },
+    {
+      "id": "peers",
+      "type": "bar",
+      "title": "Among the 27 EU countries",
+      "text": "{rank} of {count} for export growth from 2015 to {year}, {growth} in nominal euros.",
+      "queries": [
+        {"key": "main", "endpoint": "/insights/compare/records", "params": {"by": "reporter", "period": "$period", "flow": "EXPORT", "base": "2015", "limit": 27, "product": "$product"}, "tone": "exports"}
+      ],
+      "facts": {
+        "rank": {"query": "main", "path": "[is_focus=true].#position", "format": "ordinal"},
+        "count": {"query": "main", "path": "#length", "format": "int"},
+        "growth": {"query": "main", "path": "[is_focus=true].growth", "format": "percent_signed"},
+        "year": {"endpoint": "/insights/ladder", "params": {"by": "partner", "period": "$period", "flow": "EXPORT", "product": "$product"}, "path": "period", "format": "period"}
+      },
+      "options": {"x": "code", "y": "growth", "format": "percent", "orientation": "vertical", "highlight_focus": true},
+      "pinned": false,
+      "agent": "baseline"
+    }
+  ],
+  "layout": {
+    "rows": [
+      {"panels": ["headline"]},
+      {"panels": ["kpi_imports", "kpi_balance", "kpi_exports"]},
+      {"panels": ["crossroads"]},
+      {"panels": ["trend"]},
+      {"panels": ["mix_export", "specialisation", "peers"]}
+    ]
+  },
+  "marks": []
+}
