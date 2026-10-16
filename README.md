@@ -35,6 +35,11 @@ STATEC Hackathon 2026, GovTech Lab Luxembourg, 14 to 16 October 2026.
 | Cause finder | Lines changes up with dated events (tariffs, sanctions, agreements, the pandemic) and says plainly that dates lining up is not proof of cause |
 | Forecaster | Extends a series with an 80% band and says how well the method did in past tests |
 
+<figure>
+  <img src="docs/img/architecture.png" alt="Trade-Lens dashboard" width="800">
+  <figcaption>Figure 1. The Trade-Lens dashboard.</figcaption>
+</figure>
+
 A router decides which agents answer a question (one to three of them). Several agents can work on the same
 chart: the trend line, the event dates and the forecast band can all sit on one line chart.
 
