@@ -4,6 +4,8 @@ Trade-Lens (the Luxembourg Trade Explorer) is a web app for Luxembourg's externa
 who you are, ask a question in plain words, and a team of four agents answers on the page with charts and
 short notes. Every figure is calculated by fixed, documented methods from Eurostat's official trade data.
 
+**Explore the platform:** [trade-lens.besser-pearl.org](https://trade-lens.besser-pearl.org/) — no installation required.
+
 Submission of team **BESSER** ([Luxembourg Institute of Science and Technology](https://www.list.lu)) to the
 STATEC Hackathon 2026, GovTech Lab Luxembourg, 14 to 16 October 2026.
 
@@ -36,7 +38,7 @@ STATEC Hackathon 2026, GovTech Lab Luxembourg, 14 to 16 October 2026.
 A router decides which agents answer a question (one to three of them). Several agents can work on the same
 chart: the trend line, the event dates and the forecast band can all sit on one line chart.
 
-**Six readers.** On the landing page you pick who is reading: a STATEC analyst, a policy adviser, a journalist,
+**Personas.** On the landing page you pick who is reading: a STATEC analyst, a policy adviser, a journalist,
 a business owner, a researcher or a curious citizen (or just ask, for every reader). The reader changes which
 charts open first, the suggested questions, the length and vocabulary of the answers and whether codes are
 shown. It never changes a figure: two readers asking the same question see the same numbers.
@@ -47,10 +49,6 @@ fills every figure from the API. A note or caption with a typed amount or percen
 backend. In the chat, every figure in a reply is matched against what the methods returned in that turn; a
 reply with an unmatched figure is sent back once to be rewritten, and the record under the reply says how many
 figures were checked.
-
-**"How this was made"** sits under every chart, text and note: the method in plain words, the data, who drew
-it, what the assistant did (and that it calculated nothing), and a folded "For statisticians" level with the
-exact API query, so anyone can rerun it. Forecasts also have a "Model card" with the backtest.
 
 **Also on the page:** a notebook that files each question's charts under it, Keep and Remove on every chart,
 Undo and Redo, Export PDF, a seasonally adjusted view of monthly lines, quantities next to values (weight in
