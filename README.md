@@ -4,7 +4,7 @@ Trade-Lens (the Luxembourg Trade Explorer) is a web app for Luxembourg's externa
 who you are, ask a question in plain words, and a team of four agents answers on the page with charts and
 short notes. Every figure is calculated by fixed, documented methods from Eurostat's official trade data.
 
-**Explore the platform:** [trade-lens.besser-pearl.org](https://trade-lens.besser-pearl.org/) — no installation required.
+**Explore the platform:** [trade-lens.besser-pearl.org](https://trade-lens.besser-pearl.org/) No installation required.
 
 Submission of team **BESSER** ([Luxembourg Institute of Science and Technology](https://www.list.lu)) to the
 STATEC Hackathon 2026, GovTech Lab Luxembourg, 14 to 16 October 2026.
