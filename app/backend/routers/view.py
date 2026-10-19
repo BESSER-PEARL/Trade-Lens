@@ -4,8 +4,13 @@
 Agents never touch the page: they POST typed ops to /view/ops. A batch is validated
 (view/validate.py), every new query in it is pre-flighted against /insights inside this process
 (a 4xx or ``loaded: false`` rejects the batch), then the store applies it as a new version, saves
-it and pushes the full spec to every browser over SSE (GET /view/events). See docs/agents.md.
+it and pushes the full spec to the browsers showing that page over SSE (GET /view/events). See docs/agents.md.
 
+Each visitor has a page of their own: the page sends its tab's session id as ``?sid=...`` (or the header
+``X-View-Session``) on every /view call, the agent writes to the page of the session that asked, and nobody
+else sees it. Without a session id the calls reach the shared page (scripts and tests).
+
+    every /view route          ?sid=<the visitor's session> (or X-View-Session); none: the shared page
     GET  /view                 the current spec; ?since=N answers 204 while the version is <= N
     GET  /view/events          SSE: event "spec" with the full spec on connect and on every change
     POST /view/ops             a batch: 200 {version, assigned, warnings, replaced, spec} | 422 | 409
@@ -23,7 +28,9 @@ import os
 import re
 import threading
 import time
+from collections import OrderedDict
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 import httpx
@@ -45,9 +52,16 @@ PREFLIGHT_TIMEOUT = float(os.getenv("VIEW_PREFLIGHT_TIMEOUT", "90"))
 PREFLIGHT_CONCURRENCY = 4
 PREFLIGHT_CACHE_SECONDS = 600   # a query that answered well is not asked again for 10 minutes
 AGENT_TTL_SECONDS = 60
+SID_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")   # the page's session id (the same rule as the demo player's)
+SESSIONS_IN_MEMORY = 300        # visitors' pages kept loaded; the others wait in their files
+SESSION_HISTORY = 50            # versions a visitor's page keeps (undo)
+SESSION_DAYS = float(os.getenv("VIEW_SESSION_DAYS", "7"))   # a visitor's page not changed for this long is deleted
 
 _STORE: Optional[ViewStore] = None
 _STORE_LOCK = threading.Lock()
+_SESSIONS: "OrderedDict[str, ViewStore]" = OrderedDict()
+_SESSION_DIR: Optional[Path] = None
+_DEFAULT_CONTEXT: Optional[dict] = None
 _PREFLIGHT_OK: dict[str, float] = {}
 _META: list[dict] = []
 
@@ -72,21 +86,89 @@ def default_context() -> dict:
     return ctx
 
 
-def get_store() -> ViewStore:
+class BadSession(Exception):
+    """422: the session id is not one the page makes."""
+
+
+def _context() -> dict:
+    global _DEFAULT_CONTEXT
+    if _DEFAULT_CONTEXT is None:
+        _DEFAULT_CONTEXT = default_context()
+    return dict(_DEFAULT_CONTEXT)
+
+
+def _session_dir() -> Path:
+    """Where the visitors' pages are saved: view_sessions/ next to the shared state file."""
+    global _SESSION_DIR
+    if _SESSION_DIR is None:
+        shared = Path(os.getenv("VIEW_STATE_PATH") or "data/view_state.json")
+        _SESSION_DIR = shared.parent / "view_sessions"
+        _prune(_SESSION_DIR)
+    return _SESSION_DIR
+
+
+def _prune(folder: Path) -> None:
+    """Delete the visitors' pages nobody has changed for SESSION_DAYS (once, at the first visitor)."""
+    if not folder.is_dir():
+        return
+    cutoff = time.time() - SESSION_DAYS * 86400
+    gone = 0
+    for f in folder.glob("*.json"):
+        try:
+            if f.stat().st_mtime < cutoff:
+                f.unlink()
+                gone += 1
+        except OSError:
+            pass
+    if gone:
+        logger.info("deleted %d visitor pages older than %.0f days", gone, SESSION_DAYS)
+
+
+def get_store(sid: Optional[str] = None) -> ViewStore:
+    """The page of the visitor ``sid``, or the shared page when there is none."""
     global _STORE
     with _STORE_LOCK:
-        if _STORE is None:
-            _STORE = ViewStore(default_context=default_context())
-        return _STORE
+        if sid is None:
+            if _STORE is None:
+                _STORE = ViewStore(default_context=_context())
+            return _STORE
+        if not SID_RE.match(sid):
+            raise BadSession(sid)
+        store = _SESSIONS.get(sid)
+        if store is None:
+            store = ViewStore(_session_dir() / f"{sid}.json", default_context=_context(),
+                              history_limit=SESSION_HISTORY)
+            _SESSIONS[sid] = store
+            while len(_SESSIONS) > SESSIONS_IN_MEMORY:
+                _SESSIONS.popitem(last=False)   # saved on every change: it loads again from its file
+        _SESSIONS.move_to_end(sid)
+        return store
+
+
+def session_of(request: Request) -> Optional[str]:
+    """The visitor's session id: ``?sid=`` (EventSource cannot send headers) or the X-View-Session header."""
+    return request.query_params.get("sid") or request.headers.get("x-view-session") or None
+
+
+def store_of(request: Request) -> ViewStore:
+    return get_store(session_of(request))
 
 
 def configure(path: Optional[str] = None, baseline: Optional[dict] = None) -> ViewStore:
-    """Use another state file (tests); returns the new store."""
-    global _STORE
+    """Use another state file (tests); returns the new store. The visitors' pages go next to it."""
+    global _STORE, _SESSION_DIR
     with _STORE_LOCK:
-        _STORE = ViewStore(path, baseline, default_context=default_context())
+        _STORE = ViewStore(path, baseline, default_context=_context())
+        _SESSIONS.clear()
+        _SESSION_DIR = (Path(path).parent / "view_sessions") if path else None
         _PREFLIGHT_OK.clear()
         return _STORE
+
+
+def _bad_session(exc: BadSession) -> JSONResponse:
+    return JSONResponse(status_code=422, content={"detail": "Not a session id: 8 to 64 letters, digits, - or _",
+                                                  "errors": [{"path": "sid", "code": "session",
+                                                              "message": f"bad session id {str(exc)[:70]!r}"}]})
 
 
 def _who(body: Optional[dict]) -> str:
@@ -244,9 +326,12 @@ async def _preflight(client: httpx.AsyncClient, envelope: dict, context: Optiona
 
 # --------------------------------------------------------------------------- the spec
 @router.get("/view")
-def get_view(since: Optional[int] = None):
+def get_view(request: Request, since: Optional[int] = None):
     """The current spec. With ``since=N``: 204 (no body) while the version is N or less."""
-    spec = get_store().current()
+    try:
+        spec = store_of(request).current()
+    except BadSession as exc:
+        return _bad_session(exc)
     if since is not None and spec["version"] <= since:
         return Response(status_code=204)
     return spec
@@ -262,7 +347,10 @@ async def view_events(request: Request, since: Optional[int] = None, max_events:
     """Server-sent events: ``event: spec`` with the full spec, at once (unless ``since`` is the
     current version or later) and after every change; a comment line every 15 s as heartbeat.
     ``max_events`` closes the stream after that many specs (for scripts and tests)."""
-    store = get_store()
+    try:
+        store = store_of(request)
+    except BadSession as exc:
+        return _bad_session(exc)
     loop = asyncio.get_running_loop()
     queue: asyncio.Queue = asyncio.Queue()
 
@@ -316,7 +404,10 @@ async def post_ops(request: Request):
     if not isinstance(envelope, dict):
         return _rejected("The body must be a JSON object.", [{"path": "", "code": "schema",
                                                                "message": "expected {agent, ops, ...}"}])
-    store = get_store()
+    try:
+        store = store_of(request)
+    except BadSession as exc:
+        return _bad_session(exc)
     async with _client(request) as client:
         meta = await _meta(client)
         try:
@@ -350,7 +441,10 @@ async def _history_op(request: Request, action: str):
         body = await _json_body(request)
     except ValueError:
         body = None
-    store = get_store()
+    try:
+        store = store_of(request)
+    except BadSession as exc:
+        return _bad_session(exc)
     try:
         fn = {"undo": store.undo_last, "redo": store.redo_last, "reset": store.reset}[action]
         spec = await asyncio.to_thread(fn, _who(body))
@@ -378,17 +472,23 @@ async def reset(request: Request):
 
 
 @router.get("/view/history")
-def history():
-    """The last 200 versions, newest first: {version, can_undo, can_redo, entries: [{version, at,
-    agent, action (ops|undo|redo|reset|baseline), message, run_id, n_ops, persona?}]}; persona (1.4)
+def history(request: Request):
+    """The last 200 versions (50 on a visitor's page), newest first: {version, can_undo, can_redo, entries:
+    [{version, at, agent, action (ops|undo|redo|reset|baseline), message, run_id, n_ops, persona?}]}; persona (1.4)
     is the reader the version was drawn for, when the page had one."""
-    return get_store().history_entries()
+    try:
+        return store_of(request).history_entries()
+    except BadSession as exc:
+        return _bad_session(exc)
 
 
 @router.get("/view/history/{version}")
-def history_version(version: int):
-    """The spec as it was at one version (within the last 200)."""
-    spec = get_store().snapshot(version)
+def history_version(request: Request, version: int):
+    """The spec as it was at one version (within the last 200, or 50 on a visitor's page)."""
+    try:
+        spec = store_of(request).snapshot(version)
+    except BadSession as exc:
+        return _bad_session(exc)
     if spec is None:
         return JSONResponse(status_code=404, content={"detail": f"Version {version} is not in the history"})
     return spec

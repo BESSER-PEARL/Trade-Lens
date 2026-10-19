@@ -487,10 +487,13 @@ def _split(kw: dict) -> tuple[dict, dict]:
 
 # --------------------------------------------------------------------------- client
 class ViewClient:
-    def __init__(self, base_url: str = DEFAULT_BASE_URL, agent_name: str = "visualizer", timeout: float = 30.0):
+    def __init__(self, base_url: str = DEFAULT_BASE_URL, agent_name: str = "visualizer", timeout: float = 30.0,
+                 session: Optional[str] = None):
         self.base_url = base_url.rstrip("/")
         self.agent_name = agent_name
-        self._http = httpx.Client(base_url=self.base_url, timeout=timeout)
+        self.session = session   # the visitor's page (?sid=); None: the shared page
+        self._http = httpx.Client(base_url=self.base_url, timeout=timeout,
+                                  params={"sid": session} if session else None)
         self._registration: Optional[dict] = None
         self._validator = None
 

@@ -100,8 +100,9 @@ def mode_change(role: Optional[str], state: str = "working") -> dict:
 
 class Conversation:
     def __init__(self, api_url: str, llm: Any, boxes: Optional[dict[str, Toolbox]] = None, max_steps: int = 12,
-                 router_llm: Any = None, parallel: bool = True):
+                 router_llm: Any = None, parallel: bool = True, session: Optional[str] = None):
         self.api_url = api_url
+        self.session = session   # the visitor's page the specialists draw on (None: the shared page)
         self.llm = llm
         self.router_llm = router_llm or llm   # the plan: a small fast model is enough
         self.max_steps = max_steps
@@ -121,7 +122,7 @@ class Conversation:
 
     def box(self, role: str) -> Toolbox:
         if role not in self.boxes:
-            self.boxes[role] = Toolbox(self.api_url, role if role in AGENTS else "visualizer")
+            self.boxes[role] = Toolbox(self.api_url, role if role in AGENTS else "visualizer", session=self.session)
         self.boxes[role].shared_spans = self._spans
         return self.boxes[role]
 

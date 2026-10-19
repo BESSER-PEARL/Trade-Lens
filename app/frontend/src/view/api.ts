@@ -29,6 +29,50 @@ export function apiHref(relative: string): string {
   return API_URL.replace(/\/+$/, "") + relative;
 }
 
+const SID_KEY = "ask-the-data:session";
+let memorySid: string | null = null;
+
+function newSid(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+/**
+ * This tab's session id. The tab has a page of its own on the backend (?sid= on every /view call) and its own
+ * conversation with the agent (?sid= on the agent's socket, which draws on that page); a reload comes back with
+ * it. Without session storage it lasts until the tab reloads.
+ */
+export function tabSession(): string {
+  try {
+    let sid = sessionStorage.getItem(SID_KEY);
+    if (!sid) {
+      sid = newSid();
+      sessionStorage.setItem(SID_KEY, sid);
+    }
+    return sid;
+  } catch {
+    if (!memorySid) memorySid = newSid();
+    return memorySid;
+  }
+}
+
+/** ``url`` with this tab's session id (?sid=...). */
+export function withTabSession(url: string): string {
+  return `${url}${url.includes("?") ? "&" : "?"}sid=${encodeURIComponent(tabSession())}`;
+}
+
+/**
+ * The agent's socket URL for this tab: ?sid= (the demo player keeps a reply for a tab that reloads) and BAF's
+ * session_id=page-<sid>, which makes the agent draw on this tab's page (lux_insights_agent.page_session).
+ */
+export function agentSocketHref(url: string): string {
+  return `${withTabSession(url)}&session_id=${encodeURIComponent(`page-${tabSession()}`)}`;
+}
+
+/** Absolute URL of a /view path, on this tab's own page. */
+export function viewHref(relative: string): string {
+  return withTabSession(apiHref(relative));
+}
+
 /** The same query with some params replaced (undefined removes one). */
 export function withParams(q: Query, patch: Record<string, string | number | boolean | undefined>): Query {
   const params: Params = { ...q.params };

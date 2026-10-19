@@ -1,7 +1,8 @@
 # Agents: how they change the page
 
 The page is drawn from a **view spec**, a JSON document the backend holds. Agents never touch the
-page: they send typed **ops** that edit the spec, and every browser redraws from it.
+page: they send typed **ops** that edit the spec, and the browser redraws from it. Each visitor has a spec
+of their own (see "One page per visitor" below).
 
 ## The architecture in ten lines
 
@@ -12,7 +13,7 @@ page: they send typed **ops** that edit the spec, and every browser redraws from
 4. The backend validates the batch (schema, then semantics), then pre-flights every new query
    against `/insights`. A 4xx or `loaded: false` rejects the whole batch.
 5. It assigns mark ids and numbers (monotonic, never reused), makes a new version, and saves it.
-6. It pushes the full spec to every browser over SSE (`GET /view/events`, event `spec`).
+6. It pushes the full spec to the browsers showing that page over SSE (`GET /view/events`, event `spec`).
 7. The browser only renders. Panels and marks carry **queries**, never data, and the renderer
    fetches them.
 8. Text gets its figures from `{fact}` placeholders that the renderer fills from the API.
@@ -812,8 +813,14 @@ a spec without a persona behaves exactly as before.
 - **A persona never changes a figure.** It changes which panels are open, their titles, the wording
   and depth of the replies and the suggested questions. Every number still comes from `/insights`
   through `{fact}` placeholders, and two readers asking the same question see the same figures.
-- The persona is part of the shared spec, so every browser on one backend reads as the same persona
-  (fine for one reader at a time; a multi-user deployment wants a per-session context).
+- The persona is part of the visitor's own spec: each visitor reads as the persona they picked.
+
+**One page per visitor.** Every `/view` route takes the visitor's session id, `?sid=` (or the header
+`X-View-Session`; the page sends its tab's id, kept in `sessionStorage`, so a reload keeps the page). Each
+session has its own spec, history and undo, saved in `data/view_sessions/<sid>.json` and deleted after
+`VIEW_SESSION_DAYS` (7) days without a change. The page opens the agent's BAF session as `page-<sid>`
+(`?session_id=` on the socket), and the agent's `ViewClient(..., session=sid)` draws on that page only. A call
+without a session id reaches the shared page (`data/view_state.json`): scripts and tests.
 
 **For agents.** Read `spec.context.persona`, load its profile and adapt: `answer.max_sentences`,
 `answer.depth`, `answer.show_codes`, `vocabulary` (terms to replace in your words, never inside a

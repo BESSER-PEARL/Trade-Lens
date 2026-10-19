@@ -1,10 +1,8 @@
-// Whose agent output is this? The page on the backend is one shared spec, so every browser receives
-// the charts and notes that agents drew for anyone. This browser keeps the ones its own questions
-// drew (localStorage) and the view store hides the rest: nothing is deleted, the other browser keeps
-// its history, and a browser that has never asked starts from the base page.
+// What this tab shows of its page. The page on the backend is this tab's own (?sid=, see api.ts), so every chart
+// and note the agents draw on it answers this tab's questions. "Clear my charts" hides them here without
+// deleting anything, and the page opens on "my dashboard" or the full overview (below).
 
 import { useSyncExternalStore } from "react";
-import { askedRecently } from "./panelPrompts";
 import { isAgentOwner } from "./tokens";
 import type { Panel, ViewSpec } from "./types";
 
@@ -57,9 +55,8 @@ function write(next: Owned) {
 const sig = (p: Panel) => JSON.stringify([p.type, p.title, p.queries, p.options]);
 
 /**
- * Called with every spec the backend sends, before the page sees it. The first one is the page as it
- * was (not ours, unless this browser used the app before ownership existed: then all of it is). After
- * that, what a change adds or re-draws while one of our questions is pending is ours.
+ * Called with every spec the backend sends, before the page sees it. The page is this tab's own, so what it
+ * holds the first time is ours, and so is everything a change adds or re-draws.
  */
 export function claim(spec: ViewSpec) {
   if (!owned) owned = read();
@@ -68,11 +65,11 @@ export function claim(spec: ViewSpec) {
   if (!seenPanels || !seenMarks) {
     seenPanels = new Map(spec.panels.map((p) => [p.id, sig(p)] as const));
     seenMarks = new Set((spec.marks || []).map((m) => m.id));
-    if (!owned) {
-      // A browser with a history of questions from before this existed owns what it can see.
-      const veteran = !!localStorage.getItem("lux.panelPrompts");
-      write(veteran ? { panels: agentPanels.map((p) => p.id), marks: agentMarks.map((m) => m.id) } : { panels: [], marks: [] });
-    }
+    const cur = owned || { panels: [], marks: [] };
+    write({
+      panels: Array.from(new Set([...cur.panels, ...agentPanels.map((p) => p.id)])),
+      marks: Array.from(new Set([...cur.marks, ...agentMarks.map((m) => m.id)])),
+    });
     return;
   }
   const freshPanels = agentPanels.filter((p) => seenPanels!.get(p.id) !== sig(p));
@@ -81,15 +78,12 @@ export function claim(spec: ViewSpec) {
   seenMarks = new Set((spec.marks || []).map((m) => m.id));
   const live = new Set(spec.panels.map((p) => p.id));
   const liveMarks = new Set((spec.marks || []).map((m) => m.id));
-  const mine = askedRecently();
   const cur = owned || { panels: [], marks: [] };
   const panels = new Set(cur.panels.filter((id) => live.has(id)));
   const marks = new Set(cur.marks.filter((id) => liveMarks.has(id)));
-  if (mine) {
-    freshPanels.forEach((p) => panels.add(p.id));
-    freshMarks.forEach((m) => marks.add(m.id));
-  }
-  if (panels.size !== cur.panels.length || marks.size !== cur.marks.length || (mine && (freshPanels.length || freshMarks.length))) {
+  freshPanels.forEach((p) => panels.add(p.id));
+  freshMarks.forEach((m) => marks.add(m.id));
+  if (panels.size !== cur.panels.length || marks.size !== cur.marks.length || freshPanels.length || freshMarks.length) {
     write({ panels: Array.from(panels), marks: Array.from(marks) });
   }
 }

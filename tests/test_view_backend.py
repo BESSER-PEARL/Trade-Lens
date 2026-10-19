@@ -756,4 +756,37 @@ def test_a_repaired_page_panel_keeps_its_own_context(backend, tmp_path):
     assert next(p for p in fixed["panels"] if p["id"] == "peers")["title"] == next(p for p in base["panels"] if p["id"] == "peers")["title"]
 
 
+# --------------------------------------------------------------------------- each visitor's own page
+def test_each_session_has_a_page_of_its_own(client):
+    """?sid= (or X-View-Session) picks the visitor's page: a batch, a context change and undo on one page leave
+    the other visitors' pages and the shared page as they were."""
+    a, b = {"sid": "tab-aaaaaaaa"}, {"sid": "tab-bbbbbbbb"}
+    r = client.post("/view/ops", params=a, json=event_batch("a-1"))
+    assert r.status_code == 200, r.text
+    r = client.post("/view/ops", params=a, json=set_context("a-2", period="2020"))
+    assert r.status_code == 200, r.text
+    mine = client.get("/view", params=a).json()
+    assert mine["version"] == 2 and len(mine["marks"]) == 1 and mine["context"]["period"] == "2020"
+    for other in (client.get("/view", params=b).json(), client.get("/view").json()):
+        assert other["version"] == 0 and other["marks"] == [] and other["context"]["period"] != "2020"
+    via_header = client.get("/view", headers={"X-View-Session": "tab-aaaaaaaa"}).json()
+    assert via_header["version"] == 2
+    assert client.post("/view/undo", params=b).status_code == 409          # nothing done on b's page
+    assert client.get("/view/history", params=a).json()["version"] == 2
+    events = client.get("/view/events", params={**b, "max_events": 1}).text
+    assert '"version": 0' in events and "COVID-19" not in events
 
+
+def test_a_bad_session_id_is_refused(client):
+    for sid in ("short", "has space in it", "x" * 65, "../../etc"):
+        assert client.get("/view", params={"sid": sid}).status_code == 422
+        assert client.post("/view/ops", params={"sid": sid}, json=event_batch("bad")).status_code == 422
+
+
+def test_a_visitors_page_is_kept_across_a_restart(backend, client, tmp_path):
+    a = {"sid": "tab-cccccccc"}
+    assert client.post("/view/ops", params=a, json=event_batch("c-1")).status_code == 200
+    assert (tmp_path / "view_sessions" / "tab-cccccccc.json").exists()
+    backend[1].configure(tmp_path / "view_state.json")   # a new process reading the same files
+    assert len(client.get("/view", params=a).json()["marks"]) == 1
+    assert client.get("/view").json()["marks"] == []

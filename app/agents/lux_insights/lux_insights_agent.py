@@ -34,9 +34,11 @@ gitignored .env. The key is never printed, logged or written into config.yaml.
 import argparse
 import json
 import logging
+import re
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 _HERE = Path(__file__).resolve().parent
 if str(_HERE.parent) not in sys.path:
@@ -94,6 +96,16 @@ def reply_with_record(session, text: str, record: dict = None) -> None:
         session.reply(text)
 
 
+PAGE_SESSION = re.compile(r"^page-([A-Za-z0-9_-]{8,64})$")
+
+
+def page_session(session_id: str) -> Optional[str]:
+    """The visitor's page a BAF session draws on. The player opens the session as ``page-<the page's sid>``
+    (?session_id=); any other session (a client without a page) draws on the shared page."""
+    m = PAGE_SESSION.match(str(session_id or ""))
+    return m.group(1) if m else None
+
+
 def build_agent(settings: Settings):
     """The BAF agent: a router state and one state per specialist, wired by the session's plan."""
     from baf.core.agent import Agent
@@ -116,7 +128,8 @@ def build_agent(settings: Settings):
 
     def conv(session: Session) -> Conversation:
         if session.id not in conversations:
-            conversations[session.id] = Conversation(settings.api_url, llm, router_llm=router_llm)
+            conversations[session.id] = Conversation(settings.api_url, llm, router_llm=router_llm,
+                                                     session=page_session(session.id))
         return conversations[session.id]
 
     def control(session: Session, payload: dict) -> None:

@@ -37,8 +37,8 @@ hackathon's demo player (`statec-player.service`) has that unit stopped and remo
 **On the server:** `ssh -i statec.pem ec2-user@ec2-13-51-72-176.eu-north-1.compute.amazonaws.com`, then
 `sudo journalctl -u statec-agent -f` (or `statec-backend`), `sudo systemctl restart statec-agent`.
 
-**One page for everyone.** The backend keeps one shared page: a reader picked in one tab changes it for every open
-tab. A page per visitor is the next step.
+**One page per visitor.** Each browser tab has its own page (charts, reader, history), kept in
+`data/view_sessions/` for 7 days after its last change; the agent draws on the page of the person who asked.
 
 ## First setup
 

@@ -11,7 +11,7 @@ import { Panel } from "../view/Panel";
 import { ChartContextMenu, useGoodsName } from "../view/ChartContextMenu";
 import { EVERYONE, PERSONAS, foldedPanels, personaSwitchOps, personaTitle, profileOf, aReader, readerName, readingStyle, switchMessage } from "../view/personas";
 import { PanelContextScope, placeholdersOf, rangeStart, usePageContext, useViewStore, withPanelContext } from "../view/ViewStore";
-import { apiHref } from "../view/api";
+import { apiHref, viewHref } from "../view/api";
 import { useNewPanels, usePromptGroups } from "../view/panelPrompts";
 import { clearMine, forgetThisBrowser, isFullOverview, showFullOverview } from "../view/ownership";
 import { isAgentOwner } from "../view/tokens";
@@ -128,7 +128,7 @@ function useHistoryFlags(version: number, fallback: boolean): { canUndo: boolean
   useEffect(() => {
     if (fallback || version < 0) return;
     let gone = false;
-    fetch(apiHref("/view/history"), { headers: { Accept: "application/json" } })
+    fetch(viewHref("/view/history"), { headers: { Accept: "application/json" } })
       .then((r) => (r.ok ? r.json() : null))
       .then((b) => {
         if (!gone && b) setFlags({ canUndo: !!b.can_undo, canRedo: !!b.can_redo });

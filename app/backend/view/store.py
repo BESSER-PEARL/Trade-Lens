@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 """The view store: holds the spec, applies op batches, keeps history, persists to JSON.
 
-One process holds one store. Every change (a batch of ops, undo, redo, reset) makes a new version,
+A process holds the shared store and one store per visitor's page (routers/view.py). Every change (a batch of ops, undo, redo, reset) makes a new version,
 is saved to ``VIEW_STATE_PATH`` (default ``data/view_state.json``) and is pushed to listeners (the
 SSE streams of /view/events). Pre-flighting queries against /insights is the router's job; the
 store only validates (validate.py) and applies.
@@ -163,8 +163,10 @@ class ViewStore:
     """The current spec, its history and the applied run_ids, persisted to one JSON file."""
 
     def __init__(self, path: Optional[str | os.PathLike] = None, baseline: Optional[dict] = None,
-                 default_context: Optional[dict] = None, max_agent_panels: Optional[int] = None):
+                 default_context: Optional[dict] = None, max_agent_panels: Optional[int] = None,
+                 history_limit: int = HISTORY_LIMIT):
         self.path = Path(path or os.getenv("VIEW_STATE_PATH") or DEFAULT_STATE_PATH)
+        self.history_limit = max(2, int(history_limit))   # a visitor's own page keeps fewer versions
         self.baseline = copy.deepcopy(baseline) if baseline is not None else load_baseline()
         # The agents' slots: a new agent panel beyond them replaces the oldest one not kept (validate.py).
         self.max_agent_panels = max(1, int(max_agent_panels)) if max_agent_panels else _max_agent_panels()
@@ -224,7 +226,7 @@ class ViewStore:
                 self.history.append({"version": new["version"], "at": new["updated_at"], "agent": "baseline",
                                      "action": "repair", "message": message, "run_id": None, "n_ops": 0,
                                      "spec": new})
-                del self.history[:-HISTORY_LIMIT]
+                del self.history[:-self.history_limit]
                 self.undo.append(new["version"] - 1)
                 self.redo = []
                 logger.info("View state %s: %s", self.path, message)
@@ -318,8 +320,8 @@ class ViewStore:
         self.history.append({"version": new["version"], "at": new["updated_at"], "agent": agent, "action": action,
                              "message": message, "run_id": run_id, "n_ops": n_ops,
                              **({"op_kinds": op_kinds} if op_kinds else {}), "spec": new})
-        del self.history[:-HISTORY_LIMIT]
-        self.undo = self._live(self.undo)[-HISTORY_LIMIT:]
+        del self.history[:-self.history_limit]
+        self.undo = self._live(self.undo)[-self.history_limit:]
         self.redo = self._live(self.redo)
         self._save()
         self._notify()

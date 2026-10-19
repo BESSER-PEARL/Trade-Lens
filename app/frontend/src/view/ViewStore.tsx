@@ -6,7 +6,7 @@
 
 import { claim, useOwnershipVersion, visibleSpec } from "./ownership";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { API_URL, VIEW_MOCK, apiHref } from "./api";
+import { API_URL, VIEW_MOCK, apiHref, viewHref } from "./api";
 import { contextOf, withPanelContext, type PageContext } from "./context";
 import { agentInfos } from "./tokens";
 import type { AgentInfo, RegisteredAgent, ViewOp, ViewResponse, ViewSpec, ViewStatus } from "./types";
@@ -149,7 +149,7 @@ export const ViewStoreProvider: React.FC<{ children?: React.ReactNode }> = ({ ch
   const refresh = useCallback(async () => {
     if (VIEW_MOCK) return;
     try {
-      const res = await fetch(apiHref("/view"), { headers: { Accept: "application/json" } });
+      const res = await fetch(viewHref("/view"), { headers: { Accept: "application/json" } });
       if (!res.ok) throw new Error(String(res.status));
       applySpec(specOf(await readJson(res)), true);
     } catch {
@@ -175,7 +175,7 @@ export const ViewStoreProvider: React.FC<{ children?: React.ReactNode }> = ({ ch
       const since = specRef.current && !fallbackRef.current ? specRef.current.version : -1;
       let failed = false;
       try {
-        const res = await fetch(apiHref(since >= 0 ? `/view?since=${since}` : "/view"), {
+        const res = await fetch(viewHref(since >= 0 ? `/view?since=${since}` : "/view"), {
           headers: { Accept: "application/json" },
         });
         if (res.status === 204 || res.status === 304) {
@@ -203,7 +203,7 @@ export const ViewStoreProvider: React.FC<{ children?: React.ReactNode }> = ({ ch
       if (disposed || typeof EventSource === "undefined") return;
       let opened = false;
       try {
-        es = new EventSource(apiHref("/view/events"));
+        es = new EventSource(viewHref("/view/events"));
       } catch {
         es = null;
         return;
@@ -277,7 +277,7 @@ export const ViewStoreProvider: React.FC<{ children?: React.ReactNode }> = ({ ch
     async (path: string, body?: unknown): Promise<ViewResponse> => {
       if (VIEW_MOCK) return { ok: false, status: 0, detail: "Mock mode (VITE_VIEW_MOCK=1): the spec is read-only" };
       try {
-        const res = await fetch(apiHref(path), {
+        const res = await fetch(viewHref(path), {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: body === undefined ? undefined : JSON.stringify(body),

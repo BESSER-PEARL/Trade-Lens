@@ -43,7 +43,7 @@ it. Agents read numbers from `/insights`, then send typed ops (`POST /view/ops`)
 validates the batch against the JSON schemas in [`contract/`](../contract) and the rules in
 `app/backend/view/validate.py`, pre-flights every new query against `/insights` (a 4xx or
 `loaded: false` rejects the whole batch), numbers the marks, saves a new version
-(`data/view_state.json`) and pushes the full spec to every browser over SSE. Panels and marks hold
+(one page per visitor, `data/view_sessions/<sid>.json`) and pushes the full spec to that visitor's browser over SSE. Panels and marks hold
 queries, not data, and text holds `{fact}` placeholders, so every figure on the page is read from
 the API. The person at the page keeps or removes marks through the same ops, as agent `user`.
 

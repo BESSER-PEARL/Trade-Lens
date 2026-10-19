@@ -1096,10 +1096,10 @@ class Toolbox:
     """The tools of one specialist, drawing under its own name (its pen)."""
 
     def __init__(self, api_url: str, agent: str, api: Optional[InsightsClient] = None,
-                 view: Optional[ViewClient] = None):
+                 view: Optional[ViewClient] = None, session: Optional[str] = None):
         self.agent = agent
         self.api = api or InsightsClient(api_url)
-        self.view = view or ViewClient(api_url, agent)
+        self.view = view or ViewClient(api_url, agent, session=session)
         self.turn = Turn(agent)
         self._meta: Optional[dict] = None
         self._cache: dict[str, Any] = {}

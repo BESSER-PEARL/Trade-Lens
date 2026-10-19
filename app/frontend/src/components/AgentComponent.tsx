@@ -1,7 +1,7 @@
 import React, { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { AgentBar } from "./AgentBar";
 import { revealMarks, useViewStore, usePageContext, markOffContext, markPeriod, withPanelContext } from "../view/ViewStore";
-import { apiHref } from "../view/api";
+import { agentSocketHref, apiHref } from "../view/api";
 import { formatPeriod, keepFigures, shortenReply } from "../view/facts";
 import { AboutTag } from "../view/common";
 import { MarkText, markSources, noteSubject, storylines, threadWords, type Storyline } from "../view/marks";
@@ -54,25 +54,6 @@ const PEN_WORD: Record<string, string> = {
 };
 
 const CHAT_KEY = "ask-the-data:conversation";
-const SID_KEY = "ask-the-data:session";
-
-/**
- * This tab's id on the agent's socket (?sid=...): a reload comes back with it, so a reply the agent was
- * still writing is handed to the reloaded page (the demo player keeps it two minutes). None when the
- * browser keeps no session storage.
- */
-function withTabSession(url: string): string {
-  try {
-    let sid = sessionStorage.getItem(SID_KEY);
-    if (!sid) {
-      sid = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
-      sessionStorage.setItem(SID_KEY, sid);
-    }
-    return `${url}${url.includes("?") ? "&" : "?"}sid=${encodeURIComponent(sid)}`;
-  } catch {
-    return url;
-  }
-}
 
 const DEFAULT_SUGGESTIONS = ["Why did exports jump in 2025?", "Where do the goods go?", "When did exports shift for good?"];
 
@@ -625,7 +606,7 @@ export const AgentComponent: React.FC<Props> = ({
         if (parsed && typeof parsed === "object") {
           const key = agentName in parsed ? agentName : agentName.replace(/\s+/g, "_");
           if (parsed[key]) {
-            return withTabSession(parsed[key] as string);
+            return agentSocketHref(parsed[key] as string);
           }
         }
       } catch {
@@ -634,8 +615,8 @@ export const AgentComponent: React.FC<Props> = ({
     }
     const url = (import.meta.env.VITE_AGENT_URL as string | undefined) || "ws://localhost:8766";
     // A path ("/ws") is on the page's own host: ws:// on http, wss:// on https (a deployment behind nginx).
-    if (url.startsWith("/")) return withTabSession(`${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}${url}`);
-    return withTabSession(url);
+    if (url.startsWith("/")) return agentSocketHref(`${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}${url}`);
+    return agentSocketHref(url);
   }, [agentName]);
 
   useEffect(() => {
