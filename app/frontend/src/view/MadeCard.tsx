@@ -305,7 +305,7 @@ export const MadeCard: React.FC<MadeCardProps> = ({ id, title = "How this was ma
                 Explained by the {DASHBOARD_AGENT}
               </span>
               {assistantDid || "Chose this method and this chart, and wrote the title and the words."} It did not calculate any figure: every figure here is computed by the
-              {groups.length > 1 ? " methods" : " method"} above{forecast ? ", and it did not choose the forecasting method (a test on the past did)" : ""}. The page refuses any figure the
+              {groups.length > 1 ? " methods" : " method"} above{forecast ? ", and it did not choose the forecasting method (a test on the past did)" : ""}. The page refuses any figure the{" "}
               {DASHBOARD_AGENT} types in.
             </dd>
           </>
